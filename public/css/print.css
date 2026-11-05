@@ -1,0 +1,44 @@
+/* Phần chung của các mẫu phiếu in khổ A5 ngang (210 x 148 mm). Mẫu riêng: print-excel.css, print-erp.css */
+@page { size: A5 landscape; margin: 0; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #d9d9d9;
+  color: #000;
+  font-family: "Times New Roman", SimSun, serif;
+  font-size: 10.44pt;
+  line-height: 1.2;
+}
+
+/* Chữ Hán: font Tống thể (SimSun) như trên phiếu gốc, không in đậm giả. */
+.zh {
+  font-family: SimSun, NSimSun, MingLiU, PMingLiU, serif;
+  font-weight: normal;
+}
+
+.toolbar { padding: 8px 12px; background: #fff; font-family: system-ui, sans-serif; font-size: 14px; }
+.toolbar button { padding: 6px 14px; margin-right: 10px; }
+.toolbar a { margin-right: 10px; }
+.toolbar a.is-current { font-weight: bold; color: #000; text-decoration: none; }
+
+.sheet {
+  position: relative;
+  width: 210mm;
+  height: 148mm;
+  margin: 6mm auto;
+  overflow: hidden;
+  background: #fff;
+  page-break-after: always;
+  break-after: page;
+}
+.sheet:last-of-type { page-break-after: auto; break-after: auto; }
+
+.page-number { position: absolute; right: 3mm; bottom: 1.5mm; font-size: 7pt; }
+
+@media print {
+  body { background: none; }
+  .sheet { margin: 0; }
+  .no-print { display: none; }
+}

@@ -1,0 +1,48 @@
+<?php
+
+// Từ điển khôi phục dấu tiếng Việt cho dữ liệu ERP bị mất dấu ('?' thay cho ký tự bị mất).
+// Khóa: cụm từ viết HOA, '?' là ký tự mất. Giá trị: dạng đúng. Hai vế phải có cùng số từ.
+// Chỉ là GỢI Ý - tên riêng khó đoán phải sửa tay trên giao diện.
+
+return [
+    'C?NG TY' => 'CÔNG TY',
+    'C? PH?N' => 'CỔ PHẦN',
+    'C?NG NGH?' => 'CÔNG NGHỆ',
+    'C?NG NGHI?P' => 'CÔNG NGHIỆP',
+    'GIA C?NG' => 'GIA CÔNG',
+    'NGUYÊN PH? LI?U' => 'NGUYÊN PHỤ LIỆU',
+    'VI?T NAM' => 'VIỆT NAM',
+    'S?N XU?T' => 'SẢN XUẤT',
+    'V?T LI?U' => 'VẬT LIỆU',
+    'M?I' => 'MỚI',
+    '?I?N T?' => 'ĐIỆN TỬ',
+    'QU?C T?' => 'QUỐC TẾ',
+    'TH?C PH?M' => 'THỰC PHẨM',
+    'TH??NG M?I' => 'THƯƠNG MẠI',
+    'H?I D??NG' => 'HẢI DƯƠNG',
+    'H?I PH?NG' => 'HẢI PHÒNG',
+    'MI?N B?C' => 'MIỀN BẮC',
+    'C??NG TH?NH' => 'CƯỜNG THỊNH',
+    '?ÀI HI?P' => 'ĐÀI HIỆP',
+    '?ÓNG GÓI' => 'ĐÓNG GÓI',
+    'M?I TR??NG' => 'MÔI TRƯỜNG',
+    'PHÚ L?M' => 'PHÚ LÂM',
+    'TRANG PH?C' => 'TRANG PHỤC',
+    'K? THU?T' => 'KỸ THUẬT',
+    'XU?T NH?P KH?U' => 'XUẤT NHẬP KHẨU',
+    'IN ?N' => 'IN ẤN',
+    'D?CH V?' => 'DỊCH VỤ',
+    'T?NG H?P' => 'TỔNG HỢP',
+    'TIN H?C VI?N THONG' => 'TIN HỌC VIỄN THÔNG',
+    'PH?C H?P' => 'PHỨC HỢP',
+    'T?N X??NG' => 'TÂN XƯƠNG',
+    'TH?NG MINH' => 'THÔNG MINH',
+    'TH?I TRANG' => 'THỜI TRANG',
+    '??C HOA' => 'ĐỨC HOA',
+    'B?O LAN' => 'BẢO LAN',
+    'NH?A' => 'NHỰA',
+    'GI?Y' => 'GIẤY',
+    'D?T' => 'DỆT',
+    'T?I' => 'TẠI',
+    'C?NG' => 'CÔNG',
+];
