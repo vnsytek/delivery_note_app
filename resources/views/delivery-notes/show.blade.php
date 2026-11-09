@@ -37,7 +37,7 @@
             <table class="table">
                 <thead>
                 <tr>
-                    <th>STT</th><th>Mã liệu</th><th>Tên hàng (đúng dấu)</th><th>Quy cách</th>
+                    <th>STT</th><th>Mã liệu</th><th>Tên hàng (Việt / Trung)</th><th>Quy cách</th>
                     <th class="num">SL</th><th>ĐVT</th><th>PO</th><th>Mã hàng khách</th><th>Mã bộ phận</th><th>Ghi chú</th>
                 </tr>
                 </thead>
@@ -50,7 +50,10 @@
                             <input type="text" name="lines[{{ $line['id'] }}][name]" maxlength="255" class="input input--cell"
                                    value="{{ old('lines.'.$line['id'].'.name', $line['name']) }}">
                             <x-status-tag :status="$line['name_status']" />
-                            @if ($line['erp_name'] !== $line['name'])
+                            <input type="text" name="lines[{{ $line['id'] }}][name_zh]" maxlength="255" class="input input--cell input--zh"
+                                   placeholder="Tên tiếng Trung (in dưới tên Việt)"
+                                   value="{{ old('lines.'.$line['id'].'.name_zh', $line['name_zh']) }}">
+                            @if ($line['erp_name'] !== '' && $line['erp_name'] !== $line['name'])
                                 <div class="cell-original">gốc: {{ $line['erp_name'] }}</div>
                             @endif
                         </td>

@@ -118,3 +118,4 @@ a.btn { text-decoration: none; display: inline-block; }
   .site-nav { margin-left: 0; }
   .form-grid { grid-template-columns: 1fr; }
 }
+.input--zh { margin-top: 4px; font-family: SimSun, NSimSun, MingLiU, serif; }

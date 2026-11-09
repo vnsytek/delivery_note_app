@@ -7,12 +7,15 @@
         <div class="company__zh zh">{{ $company['name_zh'] }}</div>
         <div class="company__vi">{{ $company['name_vi'] }}</div>
         <div class="company__address">{{ $company['address'] }}</div>
-        <div class="company__title"><span class="zh">出貨單</span> Phiếu Giao Hàng</div>
+        <div class="company__title">
+            <span class="company__title-vi">Phiếu Giao Hàng</span>
+            <span class="company__title-zh zh">出貨單</span>
+        </div>
     </div>
 
     <div class="meta">
-        <div class="meta__label zh">销货单号</div><div class="meta__value">{{ $note['erp_type'] }}- {{ $note['erp_no'] }}</div>
-        <div class="meta__label zh">制表日期:</div><div class="meta__value">{{ $note['date_iso'] }}</div>
+        <div class="meta__label"><span class="zh">销货单号</span> Số phiếu</div><div class="meta__value">{{ $note['erp_type'] }}- {{ $note['erp_no'] }}</div>
+        <div class="meta__label"><span class="zh">制表日期</span> Ngày lập</div><div class="meta__value">{{ $note['date_iso'] }}</div>
     </div>
 
     <div class="body">
@@ -51,25 +54,28 @@
                     <td class="left">
                         <x-delivery-notes.breakable :text="$line['name']" />
                         @if ($line['spec'])<br><x-delivery-notes.breakable :text="$line['spec']" />@endif
+                        @if ($line['name_zh'])<br><span class="zh">{{ $line['name_zh'] }}</span>@endif
                     </td>
                     <td class="center">{{ $line['quantity'] }}</td>
                     <td class="center">{{ $line['unit'] }}</td>
                     <td class="center">{{ $line['customer_po'] }}</td>
-                    <td class="center bottom">{{ $line['customer_item_code'] }}</td>
+                    <td class="center">{{ $line['customer_item_code'] }}</td>
                     <td class="center">{{ $line['dept_code'] }}</td>
                 </tr>
             @endforeach
             </tbody>
+            {{-- Chân phiếu nằm trong cùng bảng để đường kẻ khớp đúng với các cột phía trên --}}
+            <tfoot>
+                <tr class="sign-top">
+                    <td rowspan="2" class="sign-customer zh">客户签收</td>
+                    <td colspan="5" rowspan="2" class="sign-blank"></td>
+                    <td colspan="2" class="sign-label zh">倉庫</td>
+                </tr>
+                <tr class="sign-bottom">
+                    <td colspan="2" class="sign-box"></td>
+                </tr>
+            </tfoot>
         </table>
-
-        <div class="sign">
-            <div class="sign__customer zh">客户签收</div>
-            <div class="sign__blank"></div>
-            <div class="sign__warehouse">
-                <div class="sign__warehouse-label zh">倉庫</div>
-                <div class="sign__warehouse-box"></div>
-            </div>
-        </div>
     </div>
 
     @if ($pages > 1)<span class="page-number">{{ $page }}/{{ $pages }}</span>@endif

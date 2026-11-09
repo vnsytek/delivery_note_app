@@ -127,8 +127,8 @@ class DeliveryNotePagesTest extends TestCase
         $this->get("/delivery-notes/{$note->id}/print")->assertOk()
             ->assertSee('class="sheet tpl-erp"', false)
             ->assertSee('css/print-erp.css', false)
-            ->assertSeeInOrder(['上逸科技服務有限公司', 'CÔNG TY TNHH DỊCH VỤ VÀ KỸ THUẬT SANG Y', '303 Lê Duẩn, Kiến An, Hải Phòng', 'Phiếu Giao Hàng'])
-            ->assertSee('V231- 261028005')->assertSee('2026-11-03')
+            ->assertSeeInOrder(['上逸科技服務有限公司', 'CÔNG TY TNHH DỊCH VỤ VÀ KỸ THUẬT SANG Y', '303 Lê Duẩn, Kiến An, Hải Phòng', 'Phiếu Giao Hàng', '出貨單'])
+            ->assertSeeInOrder(['销货单号', 'Số phiếu', 'V231- 261028005', '制表日期', 'Ngày lập', '2026-11-03'])
             ->assertSee('UDE 創源-')->assertSee('CÔNG TY UDE')
             ->assertSee('Ms. Hien - 0344536330')->assertSee('NL0088')
             ->assertSeeInOrder(['STT', 'MÃ LIỆU SANG Y', 'Quy cách', 'SL', 'ĐVT', 'PO No.', 'Mã hàng UDE', 'Mã bộ phận'])
@@ -148,6 +148,7 @@ class DeliveryNotePagesTest extends TestCase
         $this->get("/delivery-notes/{$note->id}/print")->assertOk()
             ->assertSee('class="sheet tpl-excel"', false)
             ->assertSee('css/print-excel.css', false)
+            ->assertSeeInOrder(['Phiếu Giao Hàng', '出貨單'])
             ->assertSee('V231-260320002')->assertSee('20/03/2026')
             ->assertSee('HDV- CÔNG TY HDV')->assertSee('Quảng Ninh')
             ->assertSeeInOrder(['STT', 'MÃ LIỆU', 'TÊN HÀNG', 'QUY CÁCH', 'SL', 'ĐVT', '客單號', '备注'])
@@ -188,5 +189,36 @@ class DeliveryNotePagesTest extends TestCase
             $this->get("/delivery-notes/{$note->id}/print?template={$template}")
                 ->assertDontSee('<script>alert(1)</script>', false)->assertSee('&lt;script&gt;', false);
         }
+    }
+
+    public function test_print_shows_chinese_name_under_vietnamese_in_both_templates(): void
+    {
+        $this->login();
+        // Chữ Hán lẫn trong tên ERP tự được tách xuống dòng dưới; mục danh mục có tên Trung thì ưu tiên.
+        $note = $this->note([], 1, ['item_code' => 'A1', 'erp_name' => 'SSD硬盘Ổ cứng M2']);
+        DeliveryNoteLine::factory()->create(['delivery_note_id' => $note->id, 'seq' => '002', 'item_code' => 'CPU1', 'erp_name' => 'Core i7-14700']);
+        ProductName::create(['item_code' => 'CPU1', 'name' => null, 'name_zh' => '处理器']);
+
+        foreach (['excel', 'erp'] as $template) {
+            $this->get("/delivery-notes/{$note->id}/print?template={$template}")
+                ->assertSeeInOrder(['SSD Ổ cứng M2', '硬盘'])
+                ->assertSeeInOrder(['Core i7-14700', '处理器'])
+                ->assertDontSee('SSD硬盘');
+        }
+    }
+
+    public function test_update_saves_chinese_name_without_freezing_the_vietnamese_suggestion(): void
+    {
+        $this->login();
+        $note = $this->note([], 1, ['erp_name' => 'Core i7-14700', 'item_code' => 'CPU1']);
+        $line = $note->lines()->first();
+
+        $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['name' => 'Core i7-14700', 'name_zh' => ' 处理器 ']]])->assertRedirect();
+        $this->assertDatabaseHas('product_names', ['item_code' => 'CPU1', 'name' => null, 'name_zh' => '处理器']);
+        $this->get("/delivery-notes/{$note->id}")->assertSee('处理器')->assertDontSee('đã sửa tay');
+
+        // Xóa tên Trung và tên Việt không đổi => mục danh mục bị xóa.
+        $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['name' => 'Core i7-14700', 'name_zh' => '']]])->assertRedirect();
+        $this->assertDatabaseCount('product_names', 0);
     }
 }

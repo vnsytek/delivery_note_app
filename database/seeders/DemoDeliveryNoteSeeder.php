@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Customer;
 use App\Models\DeliveryNote;
+use App\Models\ProductName;
 use Illuminate\Database\Seeder;
 
 /** Một phiếu mẫu dựng theo ảnh phiếu thật (khách UDE) để thử giao diện và bản in. Chỉ dùng cho dev. */
@@ -27,6 +28,12 @@ class DemoDeliveryNoteSeeder extends Seeder
             'supplier_code' => 'NL0088',
             'synced_at' => now(),
         ]);
+
+        // Tên tiếng Trung in dưới tên Việt (bản dịch tạm cho phiếu mẫu - sửa trên trang phiếu nếu cần).
+        $zh = ['MR24E1N1100D' => '液晶显示器', 'CPUI7-14700' => '处理器', 'CPUG6900' => '处理器', 'CPU7-265B' => '处理器', 'CPU5-225B' => '处理器'];
+        foreach ($zh as $code => $name) {
+            ProductName::updateOrCreate(['item_code' => $code], ['name_zh' => $name]);
+        }
 
         $po = '33V2-261026009';
         $lines = [
