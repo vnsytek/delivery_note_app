@@ -114,7 +114,7 @@
                     <thead>
                     <tr>
                         <th scope="col" class="col-seq">STT</th>
-                        <th scope="col" class="col-name">Tên hàng (đúng dấu)</th>
+                        <th scope="col" class="col-name">Tên hàng (Việt / Trung)</th>
                         <th scope="col" class="col-qty num">Số lượng</th>
                         <th scope="col" class="col-ref">PO, mã hàng của khách</th>
                         <th scope="col" class="col-input">Mã bộ phận</th>
@@ -125,14 +125,18 @@
                     @foreach ($note['lines'] as $line)
                         <tr>
                             <td class="col-seq" data-label="STT">{{ $line['seq'] }}</td>
-                            <td class="col-name" data-label="Tên hàng (đúng dấu)">
+                            <td class="col-name" data-label="Tên hàng (Việt / Trung)">
                                 <div class="name-edit">
                                     <label class="visually-hidden" for="line-name-{{ $line['id'] }}">Tên hàng dòng {{ $line['seq'] }}</label>
                                     <input type="text" id="line-name-{{ $line['id'] }}" name="lines[{{ $line['id'] }}][name]" maxlength="255"
                                            class="input input--cell" value="{{ old('lines.'.$line['id'].'.name', $line['name']) }}" autocomplete="off">
                                     <x-status-tag :status="$line['name_status']" />
                                 </div>
-                                @if ($line['erp_name'] !== $line['name'])
+                                <label class="visually-hidden" for="line-name-zh-{{ $line['id'] }}">Tên tiếng Trung dòng {{ $line['seq'] }}</label>
+                                <input type="text" id="line-name-zh-{{ $line['id'] }}" name="lines[{{ $line['id'] }}][name_zh]" maxlength="255"
+                                       class="input input--cell input--zh" placeholder="Tên tiếng Trung (in dưới tên Việt)"
+                                       value="{{ old('lines.'.$line['id'].'.name_zh', $line['name_zh']) }}" autocomplete="off">
+                                @if ($line['erp_name'] !== '' && $line['erp_name'] !== $line['name'])
                                     <span class="original">Gốc trong ERP: <x-lost-marks :text="$line['erp_name']" /></span>
                                 @endif
                                 <span class="sub">Mã {{ $line['item_code'] }}@if ($line['spec']), quy cách {{ $line['spec'] }}@endif</span>

@@ -1,15 +1,15 @@
-item_code,name
-DAYCUROA,"Dây curoa cho máy in mã vạch ZT411, 300dpi"
-GIT4015,Giấy in nhiệt 40x15mmx1500tem
-LOGIK120,Bàn phím Logitech K120
-MCCFace-V5L,Thiết Bị Kiểm Soát Ra Vào Chấm Công SpeedFace-V5L
-MUCB022,Lọ mực đổ Brother B022
-MUCD60BK,Mực in Brother D60BK
-MUCTN2385M,Hộp mực in TN-2385 OEM
-NBP1503CVA,"Máy tính xách tay Asus ExpertBook P1503CVA-C5H16-63WS (Core 5 210H/ 16GB/ 512GB SSD/ 15.6 inch FHD/ Win 11/ Office/ Grey)"
-PHICONG,Phí công lắp đặt máy chủ
-PRTL1210,"Máy in phun màu Epson L1210 (In, A4, USB)"
-SUAMAYTHIN,Phí công sửa máy tính - Thay main board
-UG20211,USB to Com RS232 DB9 Ugreen 20211 dài 1.5m
-PCP500MV-I3,Máy tính để bàn Asus P500MV i3-1315U
-PCP500MV-I5,Máy tính để bàn Asus P500MV i5-13420H/8GB/512GB SSD
+item_code,name,name_zh
+DAYCUROA,"Dây curoa cho máy in mã vạch ZT411, 300dpi",
+GIT4015,Giấy in nhiệt 40x15mmx1500tem,
+LOGIK120,Bàn phím Logitech K120,
+MCCFace-V5L,Thiết Bị Kiểm Soát Ra Vào Chấm Công SpeedFace-V5L,
+MUCB022,Lọ mực đổ Brother B022,
+MUCD60BK,Mực in Brother D60BK,
+MUCTN2385M,Hộp mực in TN-2385 OEM,
+NBP1503CVA,Máy tính xách tay Asus ExpertBook P1503CVA-C5H16-63WS (Core 5 210H/ 16GB/ 512GB SSD/ 15.6 inch FHD/ Win 11/ Office/ Grey),
+PHICONG,Phí công lắp đặt máy chủ,
+PRTL1210,"Máy in phun màu Epson L1210 (In, A4, USB)",彩色打印机
+SUAMAYTHIN,Phí công sửa máy tính - Thay main board,更换主板
+UG20211,USB to Com RS232 DB9 Ugreen 20211 dài 1.5m,
+PCP500MV-I3,Máy tính để bàn Asus P500MV i3-1315U,
+PCP500MV-I5,Máy tính để bàn Asus P500MV i5-13420H/8GB/512GB SSD,电脑主机ASUS

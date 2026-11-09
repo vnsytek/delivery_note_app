@@ -20,6 +20,7 @@ class UpdateDeliveryNoteRequest extends FormRequest
             'note' => ['nullable', 'string', 'max:500'],
             'lines' => ['nullable', 'array'],
             'lines.*.name' => ['nullable', 'string', 'max:255'],
+            'lines.*.name_zh' => ['nullable', 'string', 'max:255'],
             'lines.*.dept_code' => ['nullable', 'string', 'max:30'],
             'lines.*.remark' => ['nullable', 'string', 'max:255'],
         ];

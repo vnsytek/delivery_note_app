@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Models\DeliveryNote;
 use App\Models\ProductName;
 use App\Services\AccentDictionary;
+use App\Support\ChineseText;
 use App\Support\VietnameseAccentRestorer;
 use Illuminate\Support\Facades\DB;
 
@@ -43,25 +44,32 @@ class UpdateDeliveryNote
                     'dept_code' => $this->clean($input['dept_code'] ?? null),
                     'remark' => $this->clean($input['remark'] ?? null),
                 ]);
-                $this->saveProductName($line->item_code, $line->erp_name, $this->clean($input['name'] ?? null));
+                $this->saveProductName($line->item_code, $line->erp_name, $this->clean($input['name'] ?? null), $this->clean($input['name_zh'] ?? null));
             }
         });
     }
 
-    private function saveProductName(string $itemCode, ?string $erpName, ?string $name): void
+    /**
+     * Tên Việt / tên Trung giống gợi ý tự động thì không lưu; cả hai đều giống (hoặc để trống) thì xóa mục danh mục.
+     */
+    private function saveProductName(string $itemCode, ?string $erpName, ?string $name, ?string $nameZh): void
     {
-        if ($name === null) {
+        ['latin' => $latin, 'zh' => $autoZh] = ChineseText::split($erpName);
+        $suggestion = $this->restorer->suggest($latin);
+
+        // Chỉ lưu phần khác gợi ý tự động; phần nào trùng gợi ý thì để trống (= dùng gợi ý).
+        $manualName = ($name !== null && $name !== $suggestion) ? $name : null;
+        $manualZh = ($nameZh !== null && $nameZh !== $autoZh) ? $nameZh : null;
+
+        if ($manualName === null && $manualZh === null) {
             ProductName::where('item_code', $itemCode)->delete();
 
             return;
         }
-        $hasEntry = ProductName::where('item_code', $itemCode)->exists();
-        $suggestion = $this->restorer->suggest(trim((string) $erpName));
-        if (! $hasEntry && $name === $suggestion) {
-            return; // không đổi gì so với gợi ý thì không tạo mục danh mục
+        ProductName::updateOrCreate(['item_code' => $itemCode], ['name' => $manualName, 'name_zh' => $manualZh]);
+        if ($manualName !== null) {
+            $this->dictionary->learn($latin, $manualName); // từ điển sửa dấu học theo cho các mặt hàng khác
         }
-        ProductName::updateOrCreate(['item_code' => $itemCode], ['name' => $name]);
-        $this->dictionary->learn($erpName, $name); // từ điển sửa dấu học theo cho các mặt hàng khác
     }
 
     private function clean(?string $value): ?string

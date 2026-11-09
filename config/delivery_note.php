@@ -14,7 +14,7 @@ return [
     // lines_per_page = số dòng hàng tối đa trên một tờ; nhiều hơn thì tự sang tờ sau.
     'templates' => [
         'excel' => ['lines_per_page' => 5],
-        'erp' => ['lines_per_page' => 6],
+        'erp' => ['lines_per_page' => 5],
     ],
 
     // Mẫu dùng cho khách chưa khai báo bên dưới.

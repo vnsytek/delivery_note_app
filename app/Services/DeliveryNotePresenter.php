@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\DeliveryNote;
 use App\Models\DeliveryNoteLine;
 use App\Models\ProductName;
+use App\Support\ChineseText;
 use App\Support\VietnameseAccentRestorer;
 
 /** Dựng dữ liệu hiển thị/in của một phiếu: tên đúng dấu, ĐVT chuẩn. */
@@ -19,7 +20,7 @@ class DeliveryNotePresenter
     public function present(DeliveryNote $note): array
     {
         $note->loadMissing('customer', 'lines');
-        $catalog = ProductName::whereIn('item_code', $note->lines->pluck('item_code'))->pluck('name', 'item_code');
+        $catalog = ProductName::whereIn('item_code', $note->lines->pluck('item_code'))->get()->keyBy('item_code');
 
         return [
             'id' => $note->id,
@@ -37,7 +38,7 @@ class DeliveryNotePresenter
             'receiver' => $note->receiver,
             'supplier_code' => $note->supplier_code,
             'note' => $note->note,
-            'lines' => $note->lines->map(fn (DeliveryNoteLine $l) => $this->line($l, $catalog[$l->item_code] ?? null))->all(),
+            'lines' => $note->lines->map(fn (DeliveryNoteLine $l) => $this->line($l, $catalog->get($l->item_code)))->all(),
         ];
     }
 
@@ -51,16 +52,20 @@ class DeliveryNotePresenter
         return ['customer_short' => $names['MA002_VI'], 'customer_full' => $names['MA003_VI']];
     }
 
-    private function line(DeliveryNoteLine $line, ?string $catalogName): array
+    private function line(DeliveryNoteLine $line, ?ProductName $entry): array
     {
         $original = trim((string) $line->erp_name);
-        if ($catalogName !== null) {
-            $name = $catalogName;
+        // Chữ Hán lẫn trong tên ERP được tách ra làm dòng tiếng Trung; phần còn lại mới khôi phục dấu tiếng Việt.
+        ['latin' => $latin, 'zh' => $autoZh] = ChineseText::split($original);
+
+        if ($entry?->name !== null) {
+            $name = $entry->name;
             $status = CustomerNameResolver::STATUS_MANUAL;
         } else {
-            $name = $this->restorer->suggest($original);
-            $status = $this->restorer->statusOf($original, $name);
+            $name = $this->restorer->suggest($latin);
+            $status = $this->restorer->statusOf($latin, $name);
         }
+        $nameZh = $entry?->name_zh ?? $autoZh;
         $unit = $this->units->resolve($line->unit_raw);
 
         return [
@@ -69,6 +74,9 @@ class DeliveryNotePresenter
             'item_code' => $line->item_code,
             'name' => $name,
             'name_status' => $status,
+            'name_zh' => $nameZh,
+            'name_zh_auto' => $autoZh,
+            'name_suggested' => $this->restorer->suggest($latin),
             'erp_name' => $original,
             'spec' => $this->restorer->suggest($line->erp_spec),
             'quantity' => rtrim(rtrim(number_format((float) $line->quantity, 3, '.', ''), '0'), '.'),

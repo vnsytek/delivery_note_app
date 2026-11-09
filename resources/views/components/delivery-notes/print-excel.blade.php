@@ -12,8 +12,11 @@
             <col style="width:19.5mm"><col style="width:23.9mm"><col style="width:50.6mm"><col style="width:14.9mm">
             <col style="width:17.4mm"><col style="width:19.5mm"><col style="width:34.5mm"><col style="width:17.7mm">
         </colgroup>
-        <tr class="r-small"><td colspan="8"></td></tr>
-        <tr class="r-small"><td colspan="8"></td></tr>
+        <tr class="r-top"><td colspan="8"></td></tr>
+        <tr class="r-vi">
+            <td colspan="2"></td>
+            <td colspan="6" class="title-vi">Phiếu Giao Hàng</td>
+        </tr>
         <tr class="r-title">
             <td colspan="2"></td>
             <td colspan="3" class="title zh">出貨單</td>
@@ -56,7 +59,10 @@
             <tr class="r-data">
                 <td>{{ $line['seq'] }}</td>
                 <td>{{ $line['item_code'] }}</td>
-                <td><x-delivery-notes.breakable :text="$line['name']" /></td>
+                <td>
+                    <x-delivery-notes.breakable :text="$line['name']" />
+                    @if ($line['name_zh'])<br><span class="zh">{{ $line['name_zh'] }}</span>@endif
+                </td>
                 <td><x-delivery-notes.breakable :text="$line['spec']" /></td>
                 <td>{{ $line['quantity'] }}</td>
                 <td>{{ $line['unit'] }}</td>

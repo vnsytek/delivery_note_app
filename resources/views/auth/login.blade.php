@@ -8,7 +8,7 @@
             {{-- Thương hiệu neo ở góc trên trái của trang (không co theo poster) --}}
             <div class="auth__brand">
                 <img class="auth__brand-logo" src="{{ asset('images/poster-logo.png') }}" alt="">
-                <span class="auth__brand-name">CÔNG TY TNHH VIN PEAK.</span>
+                <span class="auth__brand-name">CÔNG TY TNHH SANG Y</span>
             </div>
             <div class="auth__poster">
                 <x-auth.poster />

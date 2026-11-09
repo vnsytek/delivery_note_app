@@ -449,3 +449,4 @@ mark.lost { padding: 0 1px; border-radius: 3px; background: var(--negative-bg); 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
 }
+.input--zh { margin-top: 4px; font-family: SimSun, NSimSun, MingLiU, serif; }

@@ -4,27 +4,32 @@
  */
 .tpl-erp { --line: 0.25mm; }
 
-.tpl-erp .logo { position: absolute; left: 10.5mm; top: 20.4mm; width: 19.4mm; height: 15.3mm; }
+.tpl-erp .logo { position: absolute; left: 10.5mm; top: 15mm; width: 19.4mm; height: 15.3mm; }
 
 /* Khối tên công ty */
-.tpl-erp .company { position: absolute; left: 55mm; top: 17.7mm; font-size: 6.8pt; }
-.tpl-erp .company__zh { font-size: 7.3pt; line-height: 3.6mm; margin-bottom: 2.4mm; }
+.tpl-erp .company { position: absolute; left: 67mm; top: 13mm; font-size: 6.8pt; }
+.tpl-erp .company__zh { font-size: 7.3pt; line-height: 3.6mm; margin-bottom: 1.4mm; }
 .tpl-erp .company__vi,
-.tpl-erp .company__address,
-.tpl-erp .company__title { font-weight: bold; line-height: 3.1mm; }
-.tpl-erp .company__title { text-decoration: underline; }
-.tpl-erp .company__title .zh { font-weight: bold; }
+.tpl-erp .company__address { font-weight: bold; line-height: 3.1mm; }
+/* Tiêu đề phiếu: tiếng Việt cỡ lớn, tiếng Trung song ngữ ngay bên dưới */
+.tpl-erp .company__title { margin-top: 1.2mm; font-weight: bold; font-size: 14pt; line-height: 5.4mm; }
+.tpl-erp .company__title > span { display: block; }
+.tpl-erp .company__title-vi { text-decoration: underline; }
 
-/* Số phiếu + ngày lập */
+/* Số phiếu + ngày lập: nhãn song ngữ Trung - Việt */
 .tpl-erp .meta {
   position: absolute;
-  left: 137.4mm;
-  top: 30.3mm;
+  left: 133mm;
+  top: 27.5mm;
   display: grid;
-  grid-template-columns: 24.2mm auto;
-  font-size: 6.8pt;
-  line-height: 2.8mm;
+  grid-template-columns: 35mm auto;
+  align-items: baseline;
+  row-gap: 1mm;
+  font-size: 9pt;
+  line-height: 4.4mm;
 }
+.tpl-erp .meta__label { white-space: nowrap; }
+.tpl-erp .meta__value { font-size: 10.5pt; font-weight: bold; white-space: nowrap; }
 
 /* Thân phiếu */
 .tpl-erp .body { position: absolute; left: 10mm; top: 38.7mm; width: 194mm; font-size: 8.7pt; }
@@ -46,18 +51,10 @@
 .tpl-erp .items td { height: 7.5mm; font-size: 8.3pt; line-height: 3.3mm; }
 .tpl-erp .items .center { text-align: center; }
 .tpl-erp .items .left { text-align: left; }
-.tpl-erp .items .bottom { vertical-align: bottom; }
 
-/* Chân phiếu: 客户签收 | (trống) | 倉庫 + ô ký */
-.tpl-erp .sign {
-  display: grid;
-  grid-template-columns: 16.8mm 1fr 41.8mm;
-  height: 8.8mm;
-  border: var(--line) solid #000;
-  border-top: 0;
-  font-size: 8pt;
-}
-.tpl-erp .sign__customer { padding: 0.3mm 0.5mm; border-right: var(--line) solid #000; }
-.tpl-erp .sign__blank { border-right: var(--line) solid #000; }
-.tpl-erp .sign__warehouse { display: grid; grid-template-rows: 3mm 1fr; }
-.tpl-erp .sign__warehouse-label { border-bottom: var(--line) solid #000; text-align: center; line-height: 3mm; }
+/* Chân phiếu (hàng cuối của bảng): 客户签收 | (trống) | 倉庫 + ô ký */
+.tpl-erp .items tfoot td { padding: 0 0.5mm; font-size: 8pt; line-height: 3mm; overflow: hidden; }
+.tpl-erp .items .sign-top td { height: 3.2mm; }
+.tpl-erp .items .sign-bottom td { height: 5.6mm; }
+.tpl-erp .items .sign-customer { vertical-align: top; text-align: left; padding-top: 0.3mm; }
+.tpl-erp .items .sign-label { vertical-align: middle; text-align: center; }
