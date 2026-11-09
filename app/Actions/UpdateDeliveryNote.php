@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\DeliveryNote;
 use App\Models\ProductName;
+use App\Services\AccentDictionary;
 use App\Support\VietnameseAccentRestorer;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +14,10 @@ use Illuminate\Support\Facades\DB;
  */
 class UpdateDeliveryNote
 {
-    public function __construct(private readonly VietnameseAccentRestorer $restorer) {}
+    public function __construct(
+        private readonly VietnameseAccentRestorer $restorer,
+        private readonly AccentDictionary $dictionary,
+    ) {}
 
     /**
      * @param  array{receiver?: ?string, supplier_code?: ?string, address_manual?: ?string, note?: ?string, lines?: array<int, array<string, ?string>>}  $data
@@ -57,6 +61,7 @@ class UpdateDeliveryNote
             return; // không đổi gì so với gợi ý thì không tạo mục danh mục
         }
         ProductName::updateOrCreate(['item_code' => $itemCode], ['name' => $name]);
+        $this->dictionary->learn($erpName, $name); // từ điển sửa dấu học theo cho các mặt hàng khác
     }
 
     private function clean(?string $value): ?string

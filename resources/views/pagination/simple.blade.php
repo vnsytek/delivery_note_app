@@ -1,15 +1,15 @@
 @if ($paginator->hasPages())
     <nav role="navigation" aria-label="Phân trang">
         @if ($paginator->onFirstPage())
-            <button type="button" class="btn" disabled>Trước</button>
+            <button type="button" class="btn btn--sm" disabled>Trang trước</button>
         @else
-            <a class="btn" href="{{ $paginator->previousPageUrl() }}">Trước</a>
+            <a class="btn btn--sm" href="{{ $paginator->previousPageUrl() }}" rel="prev">Trang trước</a>
         @endif
-        <span>Trang {{ $paginator->currentPage() }}/{{ $paginator->lastPage() }}</span>
+        <span>Trang {{ $paginator->currentPage() }} / {{ $paginator->lastPage() }}</span>
         @if ($paginator->hasMorePages())
-            <a class="btn" href="{{ $paginator->nextPageUrl() }}">Sau</a>
+            <a class="btn btn--sm" href="{{ $paginator->nextPageUrl() }}" rel="next">Trang sau</a>
         @else
-            <button type="button" class="btn" disabled>Sau</button>
+            <button type="button" class="btn btn--sm" disabled>Trang sau</button>
         @endif
     </nav>
 @endif

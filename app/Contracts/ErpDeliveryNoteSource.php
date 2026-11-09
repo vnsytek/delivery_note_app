@@ -9,7 +9,7 @@ interface ErpDeliveryNoteSource
      *
      * Mỗi phiếu là mảng:
      *  type, no, date (YYYYMMDD), customer_code, customer_name, address,
-     *  lines: list<{seq, item_code, name, spec, quantity, unit, customer_po, customer_item_code}>
+     *  lines: list<{seq, item_code, name, spec, quantity, unit, customer_po, customer_item_code, order_type, order_no, order_seq}>
      *
      * @return iterable<int, list<array<string, mixed>>>
      */

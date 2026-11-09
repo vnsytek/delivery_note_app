@@ -37,6 +37,24 @@ class CustomerSearchService
         ];
     }
 
+    /**
+     * Số khách hàng: tổng, cần kiểm tra (có gợi ý tự động hoặc còn '?'), và còn '?' chưa khôi phục được.
+     *
+     * @return array{total: int, review: int, partial: int}
+     */
+    public function counts(): array
+    {
+        $rows = Customer::query()
+            ->get(['id', 'ma001', 'ma002', 'ma003', 'ma002_manual', 'ma003_manual'])
+            ->map(fn (Customer $customer) => $this->resolver->present($customer));
+
+        return [
+            'total' => $rows->count(),
+            'review' => $rows->filter(fn (array $row) => $this->needsReview($row))->count(),
+            'partial' => $rows->filter(fn (array $row) => in_array(VietnameseAccentRestorer::STATUS_PARTIAL, $row['status'], true))->count(),
+        ];
+    }
+
     private function needsReview(array $row): bool
     {
         return (bool) array_intersect(

@@ -12,7 +12,7 @@ class DeliveryNoteLine extends Model
 
     protected $fillable = [
         'delivery_note_id', 'seq', 'item_code', 'erp_name', 'erp_spec', 'quantity', 'unit_raw',
-        'customer_po', 'customer_item_code', 'dept_code', 'remark',
+        'customer_po', 'customer_item_code', 'order_type', 'order_no', 'order_seq', 'dept_code', 'remark',
     ];
 
     protected function casts(): array

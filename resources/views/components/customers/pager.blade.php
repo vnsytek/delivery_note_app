@@ -1,7 +1,7 @@
 <div class="pager">
-    <span id="info"></span>
-    <span>
-        <button type="button" id="prev" class="btn">Trước</button>
-        <button type="button" id="next" class="btn">Sau</button>
+    <span id="page-info"></span>
+    <span class="pager__buttons">
+        <button type="button" id="prev" class="btn btn--sm">Trang trước</button>
+        <button type="button" id="next" class="btn btn--sm">Trang sau</button>
     </span>
 </div>

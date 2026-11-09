@@ -18,10 +18,23 @@ body {
   font-weight: normal;
 }
 
-.toolbar { padding: 8px 12px; background: #fff; font-family: system-ui, sans-serif; font-size: 14px; }
-.toolbar button { padding: 6px 14px; margin-right: 10px; }
-.toolbar a { margin-right: 10px; }
-.toolbar a.is-current { font-weight: bold; color: #000; text-decoration: none; }
+/* Thanh công cụ trên màn hình (không in ra): cùng font và màu với app. */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 16px; background: #fff;
+  border-bottom: 1px solid #e1e6ec; color: #121820;
+  font-family: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif; font-size: 14px; }
+.toolbar__print { height: 36px; padding: 0 16px; border: 1px solid #15202b; border-radius: 8px; background: #15202b; color: #fff;
+  font: inherit; font-weight: 500; cursor: pointer; }
+.toolbar__print:hover { background: #2a3642; }
+.toolbar__label { color: #56606b; }
+.toolbar a { color: #0a63a0; text-decoration: none; font-weight: 500; }
+.toolbar a:hover { text-decoration: underline; }
+.toolbar a.is-current { color: #121820; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+.toolbar__back { margin-left: auto; }
+.toolbar :focus-visible { outline: 2px solid #0a63a0; outline-offset: 2px; }
+
+/* Bản xem trước nhúng trong trang phiếu: chỉ tờ phiếu, sát mép, nền trắng. */
+.is-preview { background: #fff; }
+.is-preview .sheet { margin: 0; }
 
 .sheet {
   position: relative;

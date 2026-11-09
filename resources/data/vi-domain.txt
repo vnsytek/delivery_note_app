@@ -1,0 +1,341 @@
+# Từ và cụm từ hay gặp trong dữ liệu của công ty: địa chỉ, tên công ty, hàng IT / văn phòng, dịch vụ.
+# Dùng để đoán dấu cho chữ ERP bị mất dấu (xem App\Services\AccentSuggester): từ ở đây được ưu tiên,
+# cụm từ ở đây giúp đoán theo ngữ cảnh ("màu ??" -> "màu đỏ", "máy tính ?? bàn" -> "máy tính để bàn").
+# Mỗi dòng một từ hoặc cụm từ, viết thường, đủ dấu. Dòng bắt đầu bằng # là ghi chú. Thêm dòng mới tùy ý.
+# [company] / [address] / [product]: các dòng sau đó thuộc tên công ty / địa chỉ / tên hàng & dịch vụ.
+# Từ thuộc đúng loại chữ đang sửa được ưu tiên nhiều hơn ("x?" trong địa chỉ là "xã", không phải "xử").
+
+[company]
+công ty
+công ty cổ phần
+trách nhiệm hữu hạn
+chi nhánh
+văn phòng đại diện
+tập đoàn
+thương mại
+dịch vụ
+sản xuất
+xuất nhập khẩu
+đầu tư
+phát triển
+kỹ thuật
+công nghệ
+công nghiệp
+điện tử
+viễn thông
+tin học
+vật liệu
+vật tư
+bao bì
+in ấn
+đóng gói
+quốc tế
+việt nam
+miền bắc
+hợp tác
+thiết bị
+giải pháp
+phân phối
+xây dựng
+môi trường
+nhựa
+dệt may
+giày dép
+thời trang
+thực phẩm
+
+[address]
+số nhà
+số
+ngõ
+ngách
+hẻm
+đường
+đường số
+phố
+tầng
+lô
+lô đất
+nhà xưởng
+khu
+khu phố
+khu đô thị
+khu công nghiệp
+cụm công nghiệp
+cụm
+diện tích
+thuộc lô
+thôn
+xóm
+ấp
+xã
+phường
+thị trấn
+thị xã
+huyện
+quận
+tỉnh
+thành phố
+trung tâm
+tòa nhà
+hà nội
+hải phòng
+hải dương
+hưng yên
+bắc ninh
+bắc giang
+quảng ninh
+thái bình
+nam định
+hà nam
+ninh bình
+vĩnh phúc
+phú thọ
+thái nguyên
+lạng sơn
+thanh hóa
+nghệ an
+đà nẵng
+đồng nai
+bình dương
+long an
+hồ chí minh
+vĩnh bảo
+an dương
+kim thành
+mạo khê
+đông triều
+yên mỹ
+văn lâm
+mỹ hào
+như quỳnh
+đình vũ
+tràng duệ
+nam sách
+cẩm giàng
+bình giang
+thanh miện
+kinh môn
+chí linh
+tiên du
+từ sơn
+quế võ
+yên phong
+đồng văn
+phố nối
+lê quý đôn
+đồng trang
+tỉnh hưng yên
+tỉnh hải dương
+tỉnh quảng ninh
+tỉnh bắc ninh
+tỉnh bắc giang
+tỉnh thái bình
+tỉnh vĩnh phúc
+huyện an dương
+huyện vĩnh bảo
+huyện kim thành
+huyện yên mỹ
+huyện văn lâm
+
+[product]
+mực
+mực in
+mực đổ
+lọ mực
+hộp mực
+mực nạp
+nạp mực
+máy in
+máy in mã vạch
+máy in phun
+máy in kim
+máy in nhiệt
+mã vạch
+máy quét mã vạch
+máy đọc mã vạch
+đầu đọc
+giấy
+giấy in
+giấy in nhiệt
+giấy in tem
+tem
+tem nhãn
+nhãn
+ruy băng
+băng mực
+trống
+gạt
+đen
+đỏ
+xanh
+vàng
+trắng
+hồng
+xám
+màu đen
+màu đỏ
+màu xanh
+màu vàng
+màu trắng
+màu hồng
+xanh đỏ vàng
+nhiều màu
+đa chức năng
+
+# --- Hàng hóa: máy tính, mạng
+máy tính
+máy tính để bàn
+máy tính xách tay
+bộ máy tính
+màn hình
+bàn phím
+chuột
+chuột quang
+chuột không dây
+bàn phím không dây
+không dây
+có dây
+bộ xử lý
+bo mạch chủ
+bo mạch
+mạch
+ổ cứng
+thẻ nhớ
+đọc thẻ
+đầu đọc thẻ
+cáp
+cáp mạng
+dây mạng
+dây cáp
+dây nguồn
+hạt mạng
+mạng
+nhân mạng
+bộ chia
+bộ chia mạng
+bộ chuyển đổi
+chuyển đổi
+bộ nguồn
+nguồn
+nguồn điện
+cấp nguồn
+bộ lưu điện
+lưu điện
+liên tục
+bộ phát
+bộ phát wifi
+ốp trần
+bộ đàm
+đàm thoại
+điện thoại
+tổng đài
+máy chủ
+tủ mạng
+tủ rack
+camera
+đầu ghi
+ghi hình
+loa
+micro
+micro không dây
+tai nghe
+hội nghị
+trực tuyến
+máy chiếu
+màn chiếu
+máy trợ giảng
+trợ giảng
+máy trộn
+âm thanh
+âm nhạc
+sạc
+củ sạc
+pin
+pin sạc
+ắc quy
+bộ sạc
+bộ truyền
+truyền
+tín hiệu
+mở rộng
+thiết bị mở rộng
+card đồ họa
+đồ họa
+tản nhiệt
+quạt tản nhiệt
+bộ nhớ
+lưu trữ
+phần mềm
+bản quyền
+hệ điều hành
+hỗ trợ
+hệ thống
+tốc độ
+công suất
+chính hãng
+cao cấp
+chất lượng
+chất lượng cao
+thước cặp
+thước
+máy chấm công
+chấm công
+kiểm soát
+kiểm soát ra vào
+khuôn mặt
+vân tay
+máy lọc nước
+máy lọc không khí
+lọc nước
+nước
+không khí
+bơm
+bơm lốp
+máy bơm
+
+# --- Dịch vụ
+sửa chữa
+sửa
+sửa máy
+sửa máy tính
+lắp đặt
+lắp ráp
+thi công
+bảo trì
+bảo hành
+bảo dưỡng
+cài đặt
+thay thế
+thay
+linh kiện
+phí
+phí công
+phí dịch vụ
+chi phí
+vận chuyển
+kiểm tra
+hỏng
+lỗi
+không sửa được
+được
+báo giá
+dự án
+hợp đồng
+
+# --- Đơn vị, số lượng
+cái
+chiếc
+bộ
+hộp
+cuộn
+thùng
+cây
+gói
+tờ
+tập
+ram
+lọ
+chai
+mét
+tấm

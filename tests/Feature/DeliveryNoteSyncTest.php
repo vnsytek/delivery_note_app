@@ -89,16 +89,17 @@ class DeliveryNoteSyncTest extends TestCase
             $this->erpNote(['no' => '']),               // thiếu số
             $this->erpNote(['no' => '12AB']),            // sai định dạng
             $this->erpNote(['no' => '261028006', 'customer_code' => 'XXX']), // khách chưa có
-            $this->erpNote(['no' => '261028007']),       // hợp lệ
+            $this->erpNote(['no' => '261028007']),       // hợp lệ (V231: 9 chữ số)
+            $this->erpNote(['type' => 'V233', 'no' => '2601002']), // hợp lệ (V233/V235: 7 chữ số)
         ]);
 
         $this->artisan('delivery-notes:sync-erp')
-            ->expectsOutputToContain('Đã đồng bộ 1 phiếu')
+            ->expectsOutputToContain('Đã đồng bộ 2 phiếu')
             ->expectsOutputToContain('Bỏ qua 2 phiếu có số phiếu')
             ->expectsOutputToContain('Bỏ qua 1 phiếu vì khách hàng chưa có')
             ->assertSuccessful();
 
-        $this->assertSame(['261028007'], DeliveryNote::pluck('erp_no')->all());
+        $this->assertSame(['2601002', '261028007'], DeliveryNote::orderBy('erp_no')->pluck('erp_no')->all());
     }
 
     public function test_erp_number_is_unique(): void
