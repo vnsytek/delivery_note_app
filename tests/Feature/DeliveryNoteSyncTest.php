@@ -65,7 +65,7 @@ class DeliveryNoteSyncTest extends TestCase
 
         $note = DeliveryNote::firstOrFail();
         $note->update(['receiver' => 'Ms. Hien', 'supplier_code' => 'NL0088']);
-        $note->lines()->where('seq', '0001')->update(['dept_code' => 'MVP30']);
+        $note->lines()->where('seq', '0001')->update(['dept_code' => 'MVP30', 'quantity_manual' => 2]);
 
         // ERP: sửa số lượng dòng 1, bỏ dòng 2.
         $changed = $this->erpNote();
@@ -80,6 +80,7 @@ class DeliveryNoteSyncTest extends TestCase
         $this->assertCount(1, $note->lines);
         $this->assertSame('MVP30', $note->lines[0]->dept_code);
         $this->assertSame('5.000', $note->lines[0]->quantity);
+        $this->assertSame('2.000', $note->lines[0]->quantity_manual, 'số lượng sửa tay khi in không bị đồng bộ ghi đè');
     }
 
     public function test_notes_with_bad_number_or_unknown_customer_are_skipped_and_reported(): void
