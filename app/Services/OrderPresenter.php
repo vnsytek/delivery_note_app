@@ -5,23 +5,22 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\ProductName;
-use App\Support\VietnameseAccentRestorer;
 
 /** Dựng dữ liệu hiển thị của một đơn đặt hàng: tên khách / tên hàng đúng dấu, ĐVT chuẩn, tiền, tiến độ giao. */
 class OrderPresenter
 {
     public function __construct(
         private readonly CustomerNameResolver $customers,
-        private readonly VietnameseAccentRestorer $restorer,
         private readonly UnitCatalog $units,
+        private readonly ProductNameResolver $products,
     ) {}
 
     public function present(Order $order): array
     {
         $order->loadMissing('customer', 'lines');
-        $catalog = ProductName::whereIn('item_code', $order->lines->pluck('item_code'))->pluck('name', 'item_code');
+        $catalog = $this->products->catalog($order->lines->pluck('item_code'));
         $names = $order->customer ? $this->customers->present($order->customer) : null;
-        $lines = $order->lines->map(fn (OrderLine $l) => $this->line($l, $catalog[$l->item_code] ?? null))->all();
+        $lines = $order->lines->map(fn (OrderLine $l) => $this->line($l, $catalog->get($l->item_code)))->all();
 
         return [
             'id' => $order->id,
@@ -56,17 +55,18 @@ class OrderPresenter
         };
     }
 
-    private function line(OrderLine $line, ?string $catalogName): array
+    private function line(OrderLine $line, ?ProductName $entry): array
     {
-        $original = trim((string) $line->erp_name);
         $unit = $this->units->resolve($line->unit_raw);
+        $product = $this->products->present($line->erp_name, $line->erp_spec, $entry);
 
         return [
             'seq' => $line->seq,
             'item_code' => $line->item_code,
             'customer_item_code' => $line->customer_item_code,
-            'name' => $catalogName ?? $this->restorer->suggest($original),
-            'spec' => $this->restorer->suggest($line->erp_spec),
+            'name' => $product['name'],
+            'name_zh' => $product['name_zh'],
+            'spec' => $product['spec'],
             'quantity' => $this->qty($line->quantity),
             'delivered' => $this->qty($line->delivered_quantity),
             'remaining' => $this->qty(max(0, $line->quantity - $line->delivered_quantity)),

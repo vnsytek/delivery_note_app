@@ -83,6 +83,9 @@
                         <td class="col-seq">{{ (int) $line['seq'] }}</td>
                         <td>
                             <span class="order-card__item">{{ $line['name'] }}</span>
+                            @if ($line['name_zh'])
+                                <span class="order-card__item-zh">{{ $line['name_zh'] }}</span>
+                            @endif
                             <span class="sub">
                                 Mã <span translate="no">{{ $line['item_code'] }}</span>@if ($line['spec']), quy cách {{ $line['spec'] }}@endif
                                 @if ($line['customer_item_code']), mã của quý khách <span translate="no">{{ $line['customer_item_code'] }}</span>@endif

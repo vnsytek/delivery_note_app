@@ -141,9 +141,20 @@
                                 @endif
                                 <span class="sub">Mã {{ $line['item_code'] }}@if ($line['spec']), quy cách {{ $line['spec'] }}@endif</span>
                             </td>
-                            <td class="col-qty num" data-label="Số lượng">
-                                {{ $line['quantity'] }} {{ $line['unit'] }}
-                                @unless ($line['unit_known'])<span class="chip chip--auto" title="Đơn vị chưa có trong danh mục ĐVT">lạ</span>@endunless
+                            <td class="col-qty num" data-label="Số lượng in">
+                                <div class="qty-edit">
+                                    <label class="visually-hidden" for="line-qty-{{ $line['id'] }}">Số lượng in dòng {{ $line['seq'] }}</label>
+                                    <input type="text" id="line-qty-{{ $line['id'] }}" name="lines[{{ $line['id'] }}][quantity]" maxlength="16"
+                                           inputmode="decimal" autocomplete="off" spellcheck="false"
+                                           @class(['input', 'input--cell', 'input--qty', 'is-edited' => $line['quantity_edited']])
+                                           value="{{ old('lines.'.$line['id'].'.quantity', $line['quantity']) }}"
+                                           title="Chỉ đổi số in trên phiếu, không đổi ERP. Để trống = theo ERP.">
+                                    <span class="qty-edit__unit">{{ $line['unit'] }}</span>
+                                    @unless ($line['unit_known'])<span class="chip chip--auto" title="Đơn vị chưa có trong danh mục ĐVT">lạ</span>@endunless
+                                </div>
+                                @if ($line['quantity_edited'])
+                                    <span class="original"><span class="chip chip--manual">đã sửa</span> ERP: {{ $line['quantity_erp'] }}</span>
+                                @endif
                             </td>
                             <td class="col-ref" data-label="PO, mã hàng của khách">
                                 @if ($line['customer_po'] || $line['customer_item_code'])

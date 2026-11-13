@@ -3,10 +3,6 @@
 namespace App\Actions;
 
 use App\Models\DeliveryNote;
-use App\Models\ProductName;
-use App\Services\AccentDictionary;
-use App\Support\ChineseText;
-use App\Support\VietnameseAccentRestorer;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -15,10 +11,7 @@ use Illuminate\Support\Facades\DB;
  */
 class UpdateDeliveryNote
 {
-    public function __construct(
-        private readonly VietnameseAccentRestorer $restorer,
-        private readonly AccentDictionary $dictionary,
-    ) {}
+    public function __construct(private readonly SaveProductName $saveProductName) {}
 
     /**
      * @param  array{receiver?: ?string, supplier_code?: ?string, address_manual?: ?string, note?: ?string, lines?: array<int, array<string, ?string>>}  $data
@@ -40,36 +33,36 @@ class UpdateDeliveryNote
                 if ($input === null) {
                     continue;
                 }
-                $line->update([
+                $changes = [
                     'dept_code' => $this->clean($input['dept_code'] ?? null),
                     'remark' => $this->clean($input['remark'] ?? null),
+                ];
+                if (array_key_exists('quantity', $input)) {
+                    $changes['quantity_manual'] = $this->manualQuantity($input['quantity'], (float) $line->quantity);
+                }
+                $line->update($changes);
+                // Tên Việt / tên Trung lưu theo mã hàng (dùng lại cho mọi phiếu); để trống = quay về gợi ý tự động.
+                ($this->saveProductName)($line->item_code, $line->erp_name, $line->erp_spec, [
+                    'name' => $input['name'] ?? null,
+                    'name_zh' => $input['name_zh'] ?? null,
                 ]);
-                $this->saveProductName($line->item_code, $line->erp_name, $this->clean($input['name'] ?? null), $this->clean($input['name_zh'] ?? null));
             }
         });
     }
 
     /**
-     * Tên Việt / tên Trung giống gợi ý tự động thì không lưu; cả hai đều giống (hoặc để trống) thì xóa mục danh mục.
+     * Số lượng sửa tay chỉ lưu khi khác số ERP; để trống hoặc nhập đúng số ERP = in theo ERP.
+     * Chỉ ghi vào MySQL của app (cột quantity_manual), số lượng trong ERP không đổi.
      */
-    private function saveProductName(string $itemCode, ?string $erpName, ?string $name, ?string $nameZh): void
+    private function manualQuantity(mixed $value, float $erpQuantity): ?float
     {
-        ['latin' => $latin, 'zh' => $autoZh] = ChineseText::split($erpName);
-        $suggestion = $this->restorer->suggest($latin);
-
-        // Chỉ lưu phần khác gợi ý tự động; phần nào trùng gợi ý thì để trống (= dùng gợi ý).
-        $manualName = ($name !== null && $name !== $suggestion) ? $name : null;
-        $manualZh = ($nameZh !== null && $nameZh !== $autoZh) ? $nameZh : null;
-
-        if ($manualName === null && $manualZh === null) {
-            ProductName::where('item_code', $itemCode)->delete();
-
-            return;
+        $value = $this->clean(is_scalar($value) ? (string) $value : null);
+        if ($value === null) {
+            return null;
         }
-        ProductName::updateOrCreate(['item_code' => $itemCode], ['name' => $manualName, 'name_zh' => $manualZh]);
-        if ($manualName !== null) {
-            $this->dictionary->learn($latin, $manualName); // từ điển sửa dấu học theo cho các mặt hàng khác
-        }
+        $quantity = round((float) str_replace(',', '.', $value), 3);
+
+        return abs($quantity - $erpQuantity) < 0.0005 ? null : $quantity;
     }
 
     private function clean(?string $value): ?string

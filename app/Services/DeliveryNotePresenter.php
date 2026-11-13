@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\DeliveryNote;
 use App\Models\DeliveryNoteLine;
 use App\Models\ProductName;
-use App\Support\ChineseText;
 use App\Support\VietnameseAccentRestorer;
 
 /** Dựng dữ liệu hiển thị/in của một phiếu: tên đúng dấu, ĐVT chuẩn. */
@@ -15,12 +14,13 @@ class DeliveryNotePresenter
         private readonly CustomerNameResolver $customers,
         private readonly VietnameseAccentRestorer $restorer,
         private readonly UnitCatalog $units,
+        private readonly ProductNameResolver $products,
     ) {}
 
     public function present(DeliveryNote $note): array
     {
         $note->loadMissing('customer', 'lines');
-        $catalog = ProductName::whereIn('item_code', $note->lines->pluck('item_code'))->get()->keyBy('item_code');
+        $catalog = $this->products->catalog($note->lines->pluck('item_code'));
 
         return [
             'id' => $note->id,
@@ -54,32 +54,23 @@ class DeliveryNotePresenter
 
     private function line(DeliveryNoteLine $line, ?ProductName $entry): array
     {
-        $original = trim((string) $line->erp_name);
-        // Chữ Hán lẫn trong tên ERP được tách ra làm dòng tiếng Trung; phần còn lại mới khôi phục dấu tiếng Việt.
-        ['latin' => $latin, 'zh' => $autoZh] = ChineseText::split($original);
-
-        if ($entry?->name !== null) {
-            $name = $entry->name;
-            $status = CustomerNameResolver::STATUS_MANUAL;
-        } else {
-            $name = $this->restorer->suggest($latin);
-            $status = $this->restorer->statusOf($latin, $name);
-        }
-        $nameZh = $entry?->name_zh ?? $autoZh;
         $unit = $this->units->resolve($line->unit_raw);
+        $product = $this->products->present($line->erp_name, $line->erp_spec, $entry);
 
         return [
             'id' => $line->id,
             'seq' => $line->seq,
             'item_code' => $line->item_code,
-            'name' => $name,
-            'name_status' => $status,
-            'name_zh' => $nameZh,
-            'name_zh_auto' => $autoZh,
-            'name_suggested' => $this->restorer->suggest($latin),
-            'erp_name' => $original,
-            'spec' => $this->restorer->suggest($line->erp_spec),
-            'quantity' => rtrim(rtrim(number_format((float) $line->quantity, 3, '.', ''), '0'), '.'),
+            'name' => $product['name'],
+            'name_status' => $product['name_status'],
+            'name_zh' => $product['name_zh'],
+            'name_zh_auto' => $product['name_zh_auto'],
+            'name_suggested' => $product['name_suggested'],
+            'erp_name' => $product['erp_name'],
+            'spec' => $product['spec'],
+            'quantity' => $this->qty($line->printedQuantity()),
+            'quantity_erp' => $this->qty((float) $line->quantity),
+            'quantity_edited' => $line->quantity_manual !== null,
             'unit' => $unit['name'],
             'unit_known' => $unit['known'],
             'customer_po' => $line->customer_po,
@@ -87,5 +78,11 @@ class DeliveryNotePresenter
             'dept_code' => $line->dept_code,
             'remark' => $line->remark,
         ];
+    }
+
+    /** 3.000 -> "3", 1.500 -> "1.5" */
+    private function qty(float $value): string
+    {
+        return rtrim(rtrim(number_format($value, 3, '.', ''), '0'), '.');
     }
 }

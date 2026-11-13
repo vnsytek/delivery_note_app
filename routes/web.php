@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CustomerPageController;
 use App\Http\Controllers\DeliveryNoteController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -30,6 +31,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [OrderController::class, 'index'])->name('index');
         Route::get('/{order}', [OrderController::class, 'show'])->name('show');
     });
+
+    // Tên hàng: sửa tên Việt / tên Trung / quy cách theo mã hàng, dùng cho mọi phiếu, đơn và bản in.
+    // Mã hàng có thể chứa '/' (vd APLMDE44SA/A) nên gửi trong nội dung form, không đặt trên URL.
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::put('/products', [ProductController::class, 'update'])->name('products.update');
 
     // Từ điển sửa dấu: chọn cách viết đúng cho từ ERP bị mất dấu, một lần cho mọi nơi (chỉ ghi vào MySQL của app).
     Route::prefix('accents')->name('accents.')->group(function () {

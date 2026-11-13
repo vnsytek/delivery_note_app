@@ -38,6 +38,11 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21v-6h6v6M8 10h.01M12 10h.01M16 10h.01"/></svg>
                     Khách hàng
                 </a>
+                <a href="{{ route('products.index') }}" @class(['nav-item', 'is-active' => request()->routeIs('products.*')])
+                   @if (request()->routeIs('products.*')) aria-current="page" @endif>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
+                    Tên hàng
+                </a>
                 <a href="{{ route('accents.index') }}" @class(['nav-item', 'is-active' => request()->routeIs('accents.*')])
                    @if (request()->routeIs('accents.*')) aria-current="page" @endif>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19 9 6l5 13M5.8 15h6.4"/><path d="M15 6.5 17.5 4 20 6.5M15.5 19h4.5"/><path d="M17.75 10v9"/></svg>

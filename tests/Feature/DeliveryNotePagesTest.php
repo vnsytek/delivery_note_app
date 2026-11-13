@@ -88,6 +88,43 @@ class DeliveryNotePagesTest extends TestCase
         $this->get("/delivery-notes/{$other->id}")->assertSee('Mực in');
     }
 
+    public function test_quantity_can_be_changed_for_printing_without_changing_the_erp_quantity(): void
+    {
+        $this->login();
+        $note = $this->note(['erp_no' => '261113001'], 1, ['quantity' => 1234, 'unit_raw' => 'cái']);
+        $line = $note->lines()->first();
+
+        $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['quantity' => ' 37 ']]])->assertRedirect();
+        $line->refresh();
+        $this->assertSame('37.000', $line->quantity_manual);
+        $this->assertSame('1234.000', $line->quantity, 'số lượng ERP giữ nguyên');
+
+        // Bản in dùng số sửa tay; trang phiếu báo đã sửa và hiện số ERP.
+        $this->get("/delivery-notes/{$note->id}/print")->assertOk()->assertSee('37')->assertDontSee('1234');
+        $this->get("/delivery-notes/{$note->id}")->assertSee('value="37"', false)->assertSee('đã sửa')->assertSee('ERP: 1234');
+
+        // Dấu phẩy thập phân; lưu phần khác (không gửi số lượng) thì giữ số đã sửa.
+        $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['quantity' => '1,5']]]);
+        $this->assertSame('1.500', $line->fresh()->quantity_manual);
+        $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['remark' => 'x']]]);
+        $this->assertSame('1.500', $line->fresh()->quantity_manual);
+
+        // Nhập đúng số ERP hoặc để trống = quay về theo ERP.
+        $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['quantity' => '1234']]]);
+        $this->assertNull($line->fresh()->quantity_manual);
+        $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['quantity' => '9']]]);
+        $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['quantity' => '']]]);
+        $this->assertNull($line->fresh()->quantity_manual);
+        $this->get("/delivery-notes/{$note->id}")->assertDontSee('đã sửa');
+
+        foreach (['abc', '-1', '1.2345', '1,2,3'] as $bad) {
+            $this->from("/delivery-notes/{$note->id}")
+                ->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['quantity' => $bad]]])
+                ->assertSessionHasErrors('lines.'.$line->id.'.quantity');
+        }
+        $this->assertNull($line->fresh()->quantity_manual);
+    }
+
     public function test_update_keeps_suggestion_out_of_catalog_and_blank_name_reverts(): void
     {
         $this->login();

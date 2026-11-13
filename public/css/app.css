@@ -225,7 +225,14 @@ mark.lost { padding: 0 1px; border-radius: 3px; background: var(--negative-bg); 
 .table--lines td { padding-top: 10px; padding-bottom: 10px; }
 .table--lines .col-seq { width: 52px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .table--lines .col-name { min-width: 300px; }
-.table--lines .col-qty { width: 96px; }
+.table--lines .col-qty { width: 150px; }
+/* Số lượng in: sửa tay chỉ đổi bản in, không đổi ERP; ô đã sửa viền xanh. */
+.qty-edit { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.qty-edit .chip { margin-left: 0; }
+.input--qty { width: 76px; flex: none; text-align: right; font-variant-numeric: tabular-nums; }
+.input--qty.is-edited { border-color: var(--positive-ink); background: var(--positive-bg); }
+.qty-edit__unit { color: var(--muted); white-space: nowrap; }
+.col-qty .original .chip { margin: 0 4px 0 0; }
 .table--lines .col-ref { width: 190px; }
 .table--lines .col-input { width: 150px; }
 .name-edit { display: flex; align-items: center; gap: 4px; }
@@ -286,6 +293,7 @@ mark.lost { padding: 0 1px; border-radius: 3px; background: var(--negative-bg); 
 .order-card__customer dd { margin: 2px 0 0; font-weight: 600; }
 .order-card__table .col-seq { width: 44px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .order-card__item { font-weight: 500; }
+.order-card__item-zh { display: block; color: var(--text); font-size: 13px; }
 .order-card .price { display: none; }
 .order-card.show-prices .price { display: table-cell; }
 .order-card.show-prices .order-card__totals.price { display: block; }
@@ -333,6 +341,16 @@ mark.lost { padding: 0 1px; border-radius: 3px; background: var(--negative-bg); 
 .choice.is-current { border-color: var(--positive-ink); background: var(--positive-bg); color: var(--positive-ink); }
 .word__custom { display: flex; gap: 6px; }
 .word__custom .input { flex: 1 1 auto; height: 30px; font-size: 13px; }
+
+/* ---------- Tên hàng ---------- */
+.product__name { margin-top: 4px; font-size: 15px; line-height: 22px; font-weight: 500; overflow-wrap: anywhere; }
+.product__zh { font-size: 14px; line-height: 20px; }
+.product-form { display: grid; gap: 8px; align-content: start; }
+.product-form__field { display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: center; gap: 8px; }
+.product-form__label { color: var(--muted); font-size: 13px; }
+.product-form__actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.product-form__actions .link-button { margin: 0; font-size: 13px; }
+.input--zh::placeholder { font-family: var(--font); }
 
 @media (max-width: 640px) {
   .order-card { padding: 18px 16px; }
@@ -398,6 +416,9 @@ mark.lost { padding: 0 1px; border-radius: 3px; background: var(--negative-bg); 
 @media (max-width: 640px) {
   .page-head h1 { font-size: 22px; line-height: 28px; }
   .word { grid-template-columns: minmax(0, 1fr); }
+  .product-form__field { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .product-form__actions { justify-content: flex-start; }
+  .product-form__actions .btn { height: 40px; padding: 0 20px; }
   .word__choices .btn, .word__custom .btn { height: 40px; }
   .word__custom .input { height: 40px; }
   .coverage__bar { flex-basis: 100%; }
@@ -441,6 +462,7 @@ mark.lost { padding: 0 1px; border-radius: 3px; background: var(--negative-bg); 
     font-size: 12px; font-weight: 500; }
   .table--lines .col-name { min-width: 0; }
   .table--lines .num { text-align: left; }
+  .qty-edit { justify-content: flex-start; }
   .input--cell { height: 44px; }
   .dialog__actions .btn { flex: 1 1 0; height: 44px; }
   .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
