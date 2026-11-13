@@ -67,10 +67,8 @@ class UpdateDeliveryNote
             return;
         }
         ProductName::updateOrCreate(['item_code' => $itemCode], ['name' => $manualName, 'name_zh' => $manualZh]);
-
         if ($manualName !== null) {
-            // Từ điển sửa dấu học theo cho các mặt hàng khác; chỉ phần Latin (đã tách chữ Hán) mới so được từng từ.
-            $this->dictionary->learn($latin, $manualName);
+            $this->dictionary->learn($latin, $manualName); // từ điển sửa dấu học theo cho các mặt hàng khác
         }
     }
 

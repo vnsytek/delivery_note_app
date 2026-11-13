@@ -8,6 +8,7 @@ use App\Models\DeliveryNote;
 use App\Models\DeliveryNoteLine;
 use App\Models\OrderLine;
 use App\Models\ProductName;
+use App\Support\ChineseText;
 use App\Support\LostLetters;
 use App\Support\VietnameseAccentRestorer;
 
@@ -265,7 +266,8 @@ class AccentSuggester
             $erpNames = OrderLine::query()->whereIn('item_code', $names->keys())->pluck('erp_name', 'item_code')
                 ->merge(DeliveryNoteLine::query()->whereIn('item_code', $names->keys())->pluck('erp_name', 'item_code'));
             foreach ($names as $code => $name) {
-                $learned += $this->dictionary->learn($erpNames[$code] ?? null, $name, false);
+                // Tên ERP có thể lẫn chữ Hán ("SSD硬盘Ổ cứng"): chỉ ghép phần chữ Việt với tên đã sửa.
+                $learned += $this->dictionary->learn(ChineseText::split($erpNames[$code] ?? null)['latin'], $name, false);
             }
         }
 

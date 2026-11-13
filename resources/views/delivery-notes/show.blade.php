@@ -132,13 +132,11 @@
                                            class="input input--cell" value="{{ old('lines.'.$line['id'].'.name', $line['name']) }}" autocomplete="off">
                                     <x-status-tag :status="$line['name_status']" />
                                 </div>
-                                <div class="name-edit">
-                                    <label class="visually-hidden" for="line-name-zh-{{ $line['id'] }}">Tên tiếng Trung dòng {{ $line['seq'] }}</label>
-                                    <input type="text" id="line-name-zh-{{ $line['id'] }}" name="lines[{{ $line['id'] }}][name_zh]" maxlength="255"
-                                           class="input input--cell input--zh" placeholder="Tên tiếng Trung (in dưới tên Việt)"
-                                           value="{{ old('lines.'.$line['id'].'.name_zh', $line['name_zh']) }}" autocomplete="off">
-                                </div>
-                                @if ($line['erp_name'] !== $line['name'])
+                                <label class="visually-hidden" for="line-name-zh-{{ $line['id'] }}">Tên tiếng Trung dòng {{ $line['seq'] }}</label>
+                                <input type="text" id="line-name-zh-{{ $line['id'] }}" name="lines[{{ $line['id'] }}][name_zh]" maxlength="255"
+                                       class="input input--cell input--zh" placeholder="Tên tiếng Trung (in dưới tên Việt)"
+                                       value="{{ old('lines.'.$line['id'].'.name_zh', $line['name_zh']) }}" autocomplete="off">
+                                @if ($line['erp_name'] !== '' && $line['erp_name'] !== $line['name'])
                                     <span class="original">Gốc trong ERP: <x-lost-marks :text="$line['erp_name']" /></span>
                                 @endif
                                 <span class="sub">Mã {{ $line['item_code'] }}@if ($line['spec']), quy cách {{ $line['spec'] }}@endif</span>
