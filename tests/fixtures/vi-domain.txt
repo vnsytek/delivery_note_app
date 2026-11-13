@@ -1,0 +1,8 @@
+# test
+[address]
+xã
+thị xã
+[product]
+mực in
+bộ xử lý
+màu đỏ

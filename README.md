@@ -71,15 +71,49 @@ php artisan db:seed                            # danh mục ĐVT + tên hàng đ
 php artisan db:seed --class=DemoDeliveryNoteSeeder   # phiếu mẫu UDE (chỉ dev)
 ```
 
+### Đơn đặt hàng
+
+Menu **Đơn đặt hàng** (`php artisan orders:sync-erp`, đơn V221 / V223 / V225 từ COPTC + COPTD, chỉ đọc ERP): tìm theo số đơn, mã khách, số PO hoặc ngày.
+
+- Trang một đơn có **bản xác nhận đơn** (logo, số đơn, khách, PO, hàng hoá, ngày hẹn giao) để chụp màn hình gửi khách trước khi giao. Nút **Hiện giá / Ẩn giá** bật tắt đơn giá, thành tiền và tổng (mặc định ẩn; `?gia=1` để mở sẵn có giá). Nút **In / lưu PDF** chỉ in bản xác nhận, khổ A4.
+- Tiền lấy đúng như ERP: tiền hàng `TC029`, thuế `TC030`; khi `TC016 = 1` thì đơn giá từng dòng đã gồm thuế và bản xác nhận ghi rõ điều đó.
+- Bên dưới (không nằm trong bản chụp): các phiếu giao lập từ đơn (nối qua `TH014–TH016`) với nút **In**, và số đã giao từng dòng (`TD009`, ERP chỉ tính phiếu giao đã xác nhận). Trang phiếu giao có liên kết ngược "Lập từ đơn …".
+
+### Tự đồng bộ (không cần gõ lệnh)
+
+Khách hàng, đơn đặt hàng và phiếu giao hàng tự đồng bộ từ ERP **5 phút một lần**. Lịch khai báo trong `routes/console.php`; mỗi lần mất khoảng 10 giây và chỉ đọc ERP. Lệnh khách hàng chạy trước, vì đơn và phiếu tham chiếu tới khách.
+
+- **Chạy app bằng `composer run dev`**: lệnh này đã gồm tiến trình `php artisan schedule:work` (các dòng `[sync]` trong cửa sổ lệnh), nên không cần làm gì thêm.
+- **Chạy app bằng Apache/XAMPP** (không dùng `composer run dev`): tạo một tác vụ trong **Windows Task Scheduler** chạy mỗi phút:
+  - *Program*: đường dẫn `php.exe` (vd `C:\PHP\php-8.5.10\php.exe`); *Arguments*: `artisan schedule:run`; *Start in*: thư mục dự án.
+  - *Trigger*: hằng ngày, lặp lại mỗi 1 phút. Chọn *Run whether user is logged on or not* để không hiện cửa sổ đen mỗi phút.
+- Nếu ERP hoặc MySQL tạm không kết nối được, lần đó báo lỗi rồi bỏ qua, 5 phút sau tự chạy lại. Hai lần chạy không bao giờ chồng lên nhau (`withoutOverlapping`).
+
 - **Số phiếu lấy từ ERP** (`TG001-TG002`), có ràng buộc duy nhất `(erp_type, erp_no)` nên không thể trùng; phiếu thiếu số / sai định dạng bị bỏ qua và báo số lượng khi đồng bộ.
 - Cột **nhập tay** (người nhận, mã nhà cung cấp, địa chỉ, ghi chú, mã bộ phận, ghi chú dòng) không bị đồng bộ ghi đè.
 - **ĐVT** chuẩn hóa qua bảng `units` + `unit_aliases` (cái ← chiếc, 个, CÁI, `chi?c`...). Đơn vị chưa có trong danh mục hiện nhãn "lạ" trên trang phiếu; thêm bằng cách bổ sung `database/seeders/UnitSeeder.php`.
 - **Tên hàng đúng dấu**: sửa tên trên trang phiếu sẽ lưu theo *mã hàng* (bảng `product_names`) và dùng lại cho mọi phiếu; để trống = quay về gợi ý tự động. `ProductNameSeeder` nạp sẵn 14 tên sạch trích từ các phiếu Excel cũ.
 - **In**: khổ A5 ngang, có **hai mẫu** (`config/delivery_note.php`): `excel` dựng theo sheet trong `phieu giao hang hdv.xlsx` (kích thước đo từ chính file) và `erp` dựng theo ảnh phiếu in của khách UDE. Mẫu tự chọn theo khách (`customer_templates`, mặc định `excel`); trên trang in có thể đổi mẫu bằng liên kết hoặc `?template=erp|excel`. Tự sang tờ sau khi quá số dòng của mẫu (5 / 6 dòng). Logo ở `public/images/logo.png` (lấy từ file Excel; thay bằng file gốc nếu có). Thông tin công ty ở đầu mẫu ERP nằm trong `config/delivery_note.php`.
 
-### Kiểm tra cột ERP (làm một lần khi có kết nối)
+### Từ điển sửa dấu (tự sửa chữ ERP bị mất dấu)
 
-Các cột `TG001–TG004`, `TH001–TH006`, `TH014–TH016`, `TD014`, `TC012` lấy từ các truy vấn có sẵn trong file COPn. Bốn cột sau **chưa kiểm chứng** trên `SY2019A` và có thể phải sửa trong `config/erp.php`: địa chỉ giao hàng (`TG008`), tên khách trên phiếu (`TG007`), số lượng (`TH008`), đơn vị (`TH009`). Nếu sai, lệnh đồng bộ báo lỗi SQL "Invalid column name".
+ERP lưu chữ bằng bảng mã GBK nên mọi chữ có dấu tiếng Việt (trừ à á è é ê ì í ò ó ù ú viết thường) bị thay bằng `?` ngay lúc nhập. App sửa lại **khi hiển thị và in**, không ghi gì vào ERP; cách sửa lưu ở bảng `accent_words` của MySQL.
+
+- **Tự đoán** (`php artisan accent:suggest`, tự chạy mỗi giờ): gom mọi từ có `?` trong dữ liệu đã đồng bộ, rồi đoán theo
+  1. khuôn chữ: `?` chỉ có thể là chữ GBK không có (`VI?T` → việt/viết, không thể là viét); gõ chữ thường thì không xét chữ HOA có dấu; hỗ trợ cả kiểu gõ "Unicode tổ hợp" (`Ma?n hi?nh` → Màn hình);
+  2. độ phổ biến của từ (`resources/data/vi-words.txt`), cộng điểm lớn cho từ của ngành (`resources/data/vi-domain.txt`, chia theo địa chỉ / tên công ty / tên hàng) và từ của chính công ty (chữ còn đủ dấu, tên đã sửa tay);
+  3. ngữ cảnh: cặp hai từ liền nhau khớp một cụm đã biết thì thêm mục cụm từ (`MÀU ??` → MÀU ĐỎ, `TÍNH ?? BÀN` → TÍNH ĐỂ BÀN), từ bên cạnh cũng góp điểm cho từ đơn.
+  
+  Chắc chắn (phương án đầu hơn hẳn) → **app tự sửa** ngay, nhãn "gợi ý". Ngang nhau → **chờ chọn**, chưa sửa.
+- **Trang "Từ điển sửa dấu"** (menu bên trái): mỗi từ hiện số lần gặp, ví dụ trước/sau và các phương án; bấm một lần là áp dụng ở mọi trang và bản in, và chữ không còn bị đánh dấu "gợi ý". Có nút xác nhận một lượt mọi từ app đang tự sửa, nút **Bỏ qua** cho ký hiệu không phải chữ (vd `INTEL?` là ®), và **Đoán lại ngay**.
+- **Tự học**: sửa tên khách hàng hoặc tên hàng bằng tay thì từ điển học theo (từ ngắn 1–2 chữ học kèm từ bên cạnh, vì nghĩa đổi theo ngữ cảnh: `L? M?C` = LỌ MỰC nhưng `L? CN2` = LÔ). Không bao giờ đè lên lựa chọn của người.
+- Thêm từ/cụm từ của ngành: thêm dòng vào `resources/data/vi-domain.txt` dưới đúng mục `[address]`, `[company]` hoặc `[product]`, rồi bấm "Đoán lại ngay".
+- Dữ liệu 11/2026: 2.613 đoạn chữ có `?`; trước đây sửa trọn được 90, nay 1.987; số chữ còn `?` giảm từ 8.027 xuống 1.154.
+- `resources/data/vi-words.txt`: danh sách 50.000 từ tiếng Việt thường gặp từ [hermitdave/FrequencyWords](https://github.com/hermitdave/FrequencyWords) (dữ liệu OpenSubtitles 2018), giấy phép **CC BY-SA 4.0**.
+
+### Kiểm tra cột ERP
+
+Các cột `TG001–TG004`, `TH001–TH006`, `TH014–TH016`, `TD014`, `TC012` lấy từ các truy vấn có sẵn trong file COPn. Bốn cột còn lại đã đối chiếu dữ liệu thật trên `SY2019A` (11/2026): số lượng (`TH008`), đơn vị (`TH009`) và địa chỉ giao hàng (`TG008`, có thể mất dấu `?`) đều đúng; tên khách trên phiếu (`TG007`) có nhưng hầu như để trống, nên trang phiếu lấy tên theo danh mục khách hàng. Nếu đổi sang ERP khác, sửa tên cột trong `config/erp.php`.
 
 ## Kiến trúc
 
@@ -92,12 +126,16 @@ Services/CustomerNameResolver       Ghép bản sửa tay > gợi ý từ từ �
 Services/CustomerSyncService        Đồng bộ ERP -> MySQL (transaction theo lô)
 Services/Erp/SqlServerCustomerSource  Đọc COPMA (chỉ SELECT) - sau interface ErpCustomerSource
 Actions/UpdateCustomerNames         Lưu / xóa bản sửa tay
-Support/VietnameseAccentRestorer    Khôi phục dấu (từ điển: config/accent_phrases.php)
+Support/VietnameseAccentRestorer    Khôi phục dấu theo cụm từ (config/accent_phrases.php + bảng accent_words)
+Support/LostLetters                 Chữ nào có thể nằm sau một '?' (ràng buộc bảng mã GBK của ERP)
+Services/AccentDictionary           Từ điển sửa dấu: nạp/cache, xác nhận, học từ lần sửa tay
+Services/AccentSuggester            Tự đoán dấu cho từ lỗi (lệnh accent:suggest, mỗi giờ)
 resources/views                     Layout + Blade component (toolbar, legend, table, pager, dialog)
 public/css/app.css, public/js/customers/{api,render,main}.js   Giao diện (không cần build)
+public/css/fonts.css, public/fonts/be-vietnam-pro/   Font Be Vietnam Pro lưu sẵn trong app (giấy phép OFL), hiện đúng cả khi không có internet
 ```
 
-Bổ sung thêm cụm từ khôi phục dấu: thêm một dòng vào `config/accent_phrases.php` (hai vế phải cùng số từ).
+Bổ sung cách sửa dấu: dùng trang "Từ điển sửa dấu" (không cần sửa code). `config/accent_phrases.php` vẫn dùng được cho cụm từ viết sẵn (hai vế phải cùng số từ); mục trong bảng `accent_words` được ưu tiên hơn.
 
 ## Giao diện đăng nhập (Vite)
 

@@ -24,4 +24,28 @@ return [
     'customer_templates' => [
         'UDE' => 'erp',
     ],
+
+    // Tên hiển thị của hai mẫu in trên giao diện.
+    'template_labels' => [
+        'excel' => 'Mẫu Excel',
+        'erp' => 'Mẫu ERP',
+    ],
+
+    // Tên loại phiếu (COPTG.TG001) hiển thị dưới số phiếu.
+    'type_labels' => [
+        'V231' => 'Phiếu giao hàng',
+        'V233' => 'Phiếu giao sửa chữa',
+        'V235' => 'Phiếu giao công trình',
+    ],
+
+    // Đơn đặt hàng (COPTC.TC001) đồng bộ để xem / chụp gửi khách; cặp với phiếu giao V231 / V233 / V235.
+    'order_types' => ['V221', 'V223', 'V225'],
+    'order_type_labels' => [
+        'V221' => 'Đơn đặt hàng',
+        'V223' => 'Đơn sửa chữa',
+        'V225' => 'Đơn công trình',
+    ],
+
+    // Giờ hiển thị trên giao diện (dữ liệu lưu theo UTC).
+    'timezone' => 'Asia/Ho_Chi_Minh',
 ];

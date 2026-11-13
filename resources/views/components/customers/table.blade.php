@@ -1,10 +1,10 @@
 <div class="table-wrap">
-    <table class="table table--clickable">
+    <table class="table table--rows table--customers table--stack" aria-describedby="info">
         <thead>
         <tr>
-            <th class="col-code">Mã</th>
-            <th class="col-short">Tên viết tắt</th>
-            <th>Tên đầy đủ</th>
+            <th scope="col" class="col-code">Mã khách</th>
+            <th scope="col" class="col-short">Tên viết tắt</th>
+            <th scope="col">Tên đầy đủ</th>
         </tr>
         </thead>
         <tbody id="rows"></tbody>

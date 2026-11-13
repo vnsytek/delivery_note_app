@@ -71,7 +71,7 @@ class SqlServerDeliveryNoteSource implements ErpDeliveryNoteSource
         $rows = $conn->table('COPTH as h')
             ->leftJoin('COPTD as d', fn ($j) => $j->on('d.TD001', '=', 'h.TH014')->on('d.TD002', '=', 'h.TH015')->on('d.TD003', '=', 'h.TH016'))
             ->leftJoin('COPTC as c', fn ($j) => $j->on('c.TC001', '=', 'h.TH014')->on('c.TC002', '=', 'h.TH015'))
-            ->selectRaw("h.TH001, h.TH002, h.TH003, h.TH004, h.TH005, h.TH006, h.{$col['line_quantity']} AS quantity, h.{$col['line_unit']} AS unit, d.TD014 AS customer_item_code, c.TC012 AS customer_po")
+            ->selectRaw("h.TH001, h.TH002, h.TH003, h.TH004, h.TH005, h.TH006, h.{$col['line_quantity']} AS quantity, h.{$col['line_unit']} AS unit, d.TD014 AS customer_item_code, c.TC012 AS customer_po, h.TH014, h.TH015, h.TH016")
             ->whereIn('h.TH001', $headers->pluck('TG001')->unique()->all())
             ->whereIn('h.TH002', $headers->pluck('TG002')->unique()->all())
             ->where('h.TH020', '<>', 'V') // bỏ dòng đã hủy
@@ -89,6 +89,10 @@ class SqlServerDeliveryNoteSource implements ErpDeliveryNoteSource
                 'unit' => $r->unit,
                 'customer_po' => $r->customer_po,
                 'customer_item_code' => $r->customer_item_code,
+                // Dòng đơn đặt hàng gốc (để trang đơn hàng liệt kê phiếu giao của đơn).
+                'order_type' => $r->TH014,
+                'order_no' => $r->TH015,
+                'order_seq' => $r->TH016,
             ];
         }
 

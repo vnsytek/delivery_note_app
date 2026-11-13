@@ -46,11 +46,12 @@ class DeliveryNoteSyncService
         return $result;
     }
 
-    /** Số phiếu hợp lệ: loại 4 ký tự, số 9 chữ số (yymmdd + 3 số thứ tự), ngày YYYYMMDD. */
+    /** Số phiếu hợp lệ: loại 4 ký tự, số 7-11 chữ số, ngày YYYYMMDD. */
     private function hasValidNumber(array $note): bool
     {
         return preg_match('/^[A-Z0-9]{4}$/', $note['type']) === 1
-            && preg_match('/^\d{9}$/', $note['no']) === 1
+            // V231 dùng 9 chữ số (YYMMDDNNN), V233/V235 dùng 7 (YYMMNNN); TG002 trong ERP dài 11 ký tự.
+            && preg_match('/^\d{7,11}$/', $note['no']) === 1
             && preg_match('/^\d{8}$/', $note['date']) === 1;
     }
 
@@ -93,6 +94,9 @@ class DeliveryNoteSyncService
             'unit_raw' => $this->text($l['unit']),
             'customer_po' => $this->text($l['customer_po']),
             'customer_item_code' => $this->text($l['customer_item_code']),
+            'order_type' => $this->text($l['order_type'] ?? null),
+            'order_no' => $this->text($l['order_no'] ?? null),
+            'order_seq' => $this->text($l['order_seq'] ?? null),
             'created_at' => $now, 'updated_at' => $now,
         ], $lines);
 
@@ -100,7 +104,8 @@ class DeliveryNoteSyncService
             DeliveryNoteLine::upsert(
                 $rows,
                 ['delivery_note_id', 'seq'],
-                ['item_code', 'erp_name', 'erp_spec', 'quantity', 'unit_raw', 'customer_po', 'customer_item_code', 'updated_at'],
+                ['item_code', 'erp_name', 'erp_spec', 'quantity', 'unit_raw', 'customer_po', 'customer_item_code',
+                    'order_type', 'order_no', 'order_seq', 'updated_at'],
             );
         }
         // Dòng không còn trong ERP thì bỏ khỏi bản sao.

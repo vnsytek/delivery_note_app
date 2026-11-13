@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Ảnh chụp/trang dump khi kiểm tra giao diện (có dữ liệu khách hàng thật)
+/.taste-skill
