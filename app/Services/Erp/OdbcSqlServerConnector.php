@@ -18,19 +18,47 @@ final class OdbcSqlServerConnector
             }
         }
 
-        // AutoTranslate=no: nhận nguyên byte của cột char (GBK), GbkSqlServerConnection sẽ đổi sang UTF-8.
+        return new PDO(self::dsn($config), $config['username'], $config['password'] ?? '', [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+        ]);
+    }
+
+    /**
+     * Chuỗi kết nối ODBC. AutoTranslate=no: nhận nguyên byte của cột char (GBK), GbkSqlServerConnection sẽ đổi sang UTF-8.
+     * Driver "ODBC Driver 17/18 for SQL Server" (bắt buộc trên Linux) mặc định mã hóa và kiểm tra chứng chỉ, nên truyền
+     * Encrypt / TrustServerCertificate theo ERP_DB_ENCRYPT / ERP_DB_TRUST_SERVER_CERTIFICATE (ERP dùng chứng chỉ tự cấp).
+     * Driver "SQL Server" cũ của Windows giữ nguyên như trước.
+     */
+    public static function dsn(array $config): string
+    {
+        $driver = $config['odbc_driver'] ?? 'SQL Server';
         $dsn = sprintf(
             'odbc:Driver={%s};Server=%s,%s;Database=%s;AutoTranslate=no',
-            $config['odbc_driver'] ?? 'SQL Server',
+            $driver,
             $config['host'],
             $config['port'] ?? '1433',
             $config['database'],
         );
 
-        return new PDO($dsn, $config['username'], $config['password'] ?? '', [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-        ]);
+        if (stripos($driver, 'ODBC Driver') === 0) {
+            $dsn .= ';Encrypt='.self::yesNo($config['encrypt'] ?? 'yes', keep: ['strict', 'mandatory', 'optional'])
+                .';TrustServerCertificate='.self::yesNo($config['trust_server_certificate'] ?? 'false');
+        }
+
+        return $dsn;
+    }
+
+    /** true/1/yes/on -> yes, false/0/no/off -> no; các giá trị hợp lệ khác (vd strict) giữ nguyên. */
+    private static function yesNo(mixed $value, array $keep = []): string
+    {
+        $value = strtolower(trim(is_bool($value) ? ($value ? 'yes' : 'no') : (string) $value));
+
+        return match (true) {
+            in_array($value, ['1', 'true', 'yes', 'on'], true) => 'yes',
+            in_array($value, $keep, true) => $value,
+            default => 'no',
+        };
     }
 
     /** Báo lỗi dễ hiểu nếu thiếu extension cần cho driver đang chọn (ERP_DB_DRIVER). */
