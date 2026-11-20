@@ -34,7 +34,10 @@ class AccentWordController extends Controller
             ->whereIn('status', self::TABS[$tab])
             ->when(in_array($tab, ['unsure', 'suggested'], true), fn ($query) => $query->where('occurrences', '>', 0))
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
-                ->where('broken', 'like', '%'.mb_strtoupper($q).'%')
+                // Cột broken phân biệt dấu (utf8mb4_bin); ô tìm kiếm vẫn tìm không phân biệt dấu như trước.
+                ->when(in_array($w->getConnection()->getDriverName(), ['mysql', 'mariadb'], true),
+                    fn ($w) => $w->whereRaw('broken COLLATE utf8mb4_unicode_ci LIKE ?', ['%'.mb_strtoupper($q).'%']),
+                    fn ($w) => $w->where('broken', 'like', '%'.mb_strtoupper($q).'%'))
                 ->orWhere('fixed', 'like', '%'.mb_strtoupper($q).'%')))
             ->orderByDesc('occurrences')->orderBy('broken')
             ->paginate(25)->withQueryString();
