@@ -21,6 +21,8 @@ class UpdateDeliveryNoteRequest extends FormRequest
             'lines' => ['nullable', 'array'],
             'lines.*.name' => ['nullable', 'string', 'max:255'],
             'lines.*.name_zh' => ['nullable', 'string', 'max:255'],
+            'lines.*.spec' => ['nullable', 'string', 'max:255'],
+            'lines.*.spec_zh' => ['nullable', 'string', 'max:255'],
             'lines.*.dept_code' => ['nullable', 'string', 'max:30'],
             'lines.*.remark' => ['nullable', 'string', 'max:255'],
             // Số lượng sửa tay khi in: số không âm, tối đa 3 chữ số thập phân (dấu chấm hoặc phẩy).

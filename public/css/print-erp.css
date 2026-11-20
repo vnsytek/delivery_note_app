@@ -44,6 +44,8 @@
 .tpl-erp .box th, .tpl-erp .box td { height: 4mm; padding: 0 0 0 0.4mm; text-align: left; vertical-align: middle; white-space: nowrap; }
 .tpl-erp .box th { width: 16.5mm; font-weight: normal; font-size: 10pt; }
 .tpl-erp .box .strong { font-weight: bold; }
+/* Người nhận / địa chỉ: cho xuống dòng và rộng hơn, không dính sát đường kẻ */
+.tpl-erp .box .wrap { height: 6.5mm; padding: 0.6mm 0.4mm 0.6mm 0.8mm; white-space: normal; line-height: 3.6mm; }
 
 .tpl-erp .items { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .tpl-erp .items th, .tpl-erp .items td { border: var(--line) solid #000; padding: 0.4mm 0.3mm; vertical-align: middle; overflow: hidden; }
@@ -58,3 +60,11 @@
 .tpl-erp .items .sign-bottom td { height: 5.6mm; }
 .tpl-erp .items .sign-customer { vertical-align: top; text-align: left; padding-top: 0.3mm; }
 .tpl-erp .items .sign-label { vertical-align: middle; text-align: center; }
+
+/* Mẫu chung: ô ký cao hơn để có chỗ ký tên (mẫu riêng giữ nguyên) */
+.tpl-erp-general .items .sign-top td { height: 4.2mm; }
+.tpl-erp-general .items .sign-bottom td { height: 13mm; }
+.tpl-erp-general .items .sign-customer { white-space: nowrap; }
+
+/* Chân phiếu (mẫu chung + riêng): 客户签收 / 倉庫 / 填表 căn giữa ô */
+.tpl-erp .items .sign-customer, .tpl-erp .items .sign-label { text-align: center; vertical-align: middle; }

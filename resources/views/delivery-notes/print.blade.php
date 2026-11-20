@@ -6,7 +6,7 @@
     <title>Phiếu giao hàng {{ $note['number'] }}</title>
     <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">{{-- chỉ cho thanh công cụ; phiếu dùng font riêng của mẫu --}}
     <link rel="stylesheet" href="{{ asset('css/print.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/print-'.$template.'.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/'.config("delivery_note.templates.{$template}.css", 'print-'.$template).'.css') }}">
 </head>
 <body @class(['is-preview' => $preview ?? false])>
 @unless ($preview ?? false)

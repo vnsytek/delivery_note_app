@@ -6,16 +6,13 @@ use App\Contracts\ErpOrderSource;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use RuntimeException;
 
 /** Đọc COPTC (đầu đơn) + COPTD (dòng đơn) của ERP qua connection 'erp'. Chỉ SELECT. */
 class SqlServerOrderSource implements ErpOrderSource
 {
     public function chunks(string $since, int $size): iterable
     {
-        if (! extension_loaded('pdo_sqlsrv')) {
-            throw new RuntimeException('Thiếu extension pdo_sqlsrv của PHP (xem README).');
-        }
+        OdbcSqlServerConnector::assertAvailable();
         if (! preg_match('/^\d{8}$/', $since)) {
             throw new InvalidArgumentException('Ngày --since phải có dạng YYYYMMDD.');
         }

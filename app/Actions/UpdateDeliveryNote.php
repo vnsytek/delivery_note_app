@@ -3,6 +3,11 @@
 namespace App\Actions;
 
 use App\Models\DeliveryNote;
+use App\Models\DeliveryNoteLine;
+use App\Models\ProductName;
+use App\Services\AccentDictionary;
+use App\Services\ProductLineText;
+use App\Support\ChineseText;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -11,7 +16,10 @@ use Illuminate\Support\Facades\DB;
  */
 class UpdateDeliveryNote
 {
-    public function __construct(private readonly SaveProductName $saveProductName) {}
+    public function __construct(
+        private readonly ProductLineText $text,
+        private readonly AccentDictionary $dictionary,
+    ) {}
 
     /**
      * @param  array{receiver?: ?string, supplier_code?: ?string, address_manual?: ?string, note?: ?string, lines?: array<int, array<string, ?string>>}  $data
@@ -41,13 +49,48 @@ class UpdateDeliveryNote
                     $changes['quantity_manual'] = $this->manualQuantity($input['quantity'], (float) $line->quantity);
                 }
                 $line->update($changes);
-                // Tên Việt / tên Trung lưu theo mã hàng (dùng lại cho mọi phiếu); để trống = quay về gợi ý tự động.
-                ($this->saveProductName)($line->item_code, $line->erp_name, $line->erp_spec, [
-                    'name' => $input['name'] ?? null,
-                    'name_zh' => $input['name_zh'] ?? null,
-                ]);
+                // Chỉ các ô form có gửi mới được cập nhật (vd lưu phiếu không có ô quy cách thì giữ quy cách đã sửa).
+                $this->saveProductText($line, array_map(
+                    fn ($value) => $this->clean(is_scalar($value) ? (string) $value : null),
+                    array_intersect_key($input, array_flip(['name', 'name_zh', 'spec', 'spec_zh'])),
+                ));
             }
         });
+    }
+
+    /**
+     * Lưu tên hàng / quy cách (Việt, Trung) theo mã hàng. Chỉ các trường có trong $input bị đổi. Giá trị trùng bản tự động
+     * thì không lưu (= tiếp tục dùng bản tự động); cả bốn trường đều trống thì xóa mục danh mục của mã hàng.
+     *
+     * @param  array{name?: ?string, name_zh?: ?string, spec?: ?string, spec_zh?: ?string}  $input
+     */
+    private function saveProductText(DeliveryNoteLine $line, array $input): void
+    {
+        if ($input === []) {
+            return;
+        }
+        $auto = $this->text->build($line->item_code, $line->erp_name, $line->erp_spec);
+        $autoKeys = ['name' => 'name_suggested', 'name_zh' => 'name_zh_auto', 'spec' => 'spec_suggested', 'spec_zh' => 'spec_zh_auto'];
+
+        $entry = ProductName::firstOrNew(['item_code' => $line->item_code]);
+        foreach ($input as $field => $value) {
+            $entry->{$field} = $this->differs($value, $auto[$autoKeys[$field]]);
+        }
+
+        if ($entry->name === null && $entry->name_zh === null && $entry->spec === null && $entry->spec_zh === null) {
+            if ($entry->exists) {
+                $entry->delete();
+            }
+
+            return;
+        }
+        $nameChanged = $entry->isDirty('name');
+        $entry->save();
+
+        if ($nameChanged && $entry->name !== null) {
+            // Từ điển sửa dấu học theo cho các mặt hàng khác; chỉ phần Latin (đã tách chữ Hán) mới so được từng từ.
+            $this->dictionary->learn(ChineseText::split($line->erp_name)['latin'], $entry->name);
+        }
     }
 
     /**
@@ -63,6 +106,12 @@ class UpdateDeliveryNote
         $quantity = round((float) str_replace(',', '.', $value), 3);
 
         return abs($quantity - $erpQuantity) < 0.0005 ? null : $quantity;
+    }
+
+    /** Giá trị người nhập nếu khác bản tự động, ngược lại null. */
+    private function differs(?string $submitted, ?string $auto): ?string
+    {
+        return ($submitted !== null && $submitted !== (string) $auto) ? $submitted : null;
     }
 
     private function clean(?string $value): ?string

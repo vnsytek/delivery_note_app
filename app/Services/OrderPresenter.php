@@ -5,20 +5,22 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\OrderLine;
 use App\Models\ProductName;
+use App\Support\VietnameseAccentRestorer;
 
 /** Dựng dữ liệu hiển thị của một đơn đặt hàng: tên khách / tên hàng đúng dấu, ĐVT chuẩn, tiền, tiến độ giao. */
 class OrderPresenter
 {
     public function __construct(
         private readonly CustomerNameResolver $customers,
+        private readonly VietnameseAccentRestorer $restorer,
         private readonly UnitCatalog $units,
-        private readonly ProductNameResolver $products,
+        private readonly ProductLineText $text,
     ) {}
 
     public function present(Order $order): array
     {
         $order->loadMissing('customer', 'lines');
-        $catalog = $this->products->catalog($order->lines->pluck('item_code'));
+        $catalog = ProductName::whereIn('item_code', $order->lines->pluck('item_code'))->get()->keyBy('item_code');
         $names = $order->customer ? $this->customers->present($order->customer) : null;
         $lines = $order->lines->map(fn (OrderLine $l) => $this->line($l, $catalog->get($l->item_code)))->all();
 
@@ -57,16 +59,19 @@ class OrderPresenter
 
     private function line(OrderLine $line, ?ProductName $entry): array
     {
+        $text = $this->text->build($line->item_code, $line->erp_name, $line->erp_spec, $entry);
         $unit = $this->units->resolve($line->unit_raw);
-        $product = $this->products->present($line->erp_name, $line->erp_spec, $entry);
 
         return [
             'seq' => $line->seq,
             'item_code' => $line->item_code,
             'customer_item_code' => $line->customer_item_code,
-            'name' => $product['name'],
-            'name_zh' => $product['name_zh'],
-            'spec' => $product['spec'],
+            'name' => $text['name'],
+            'name_zh' => $text['name_zh'],
+            'name_zh_is_type' => $text['name_zh_source'] === 'type',
+            'type' => $text['type'],
+            'spec' => $text['spec'],
+            'spec_zh' => $text['spec_zh'],
             'quantity' => $this->qty($line->quantity),
             'delivered' => $this->qty($line->delivered_quantity),
             'remaining' => $this->qty(max(0, $line->quantity - $line->delivered_quantity)),

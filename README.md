@@ -11,7 +11,7 @@ Xem danh sách khách hàng ERP (bảng `COPMA`), tự khôi phục gợi ý d�
 | PHP | **≥ 8.2** (extension: `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `ctype`, `tokenizer`, `xml`) |
 | MySQL / MariaDB | MySQL 8 / MariaDB 10.3+ (XAMPP) |
 | Composer | 2.x |
-| `pdo_sqlsrv` | Chỉ cần cho lệnh đồng bộ từ ERP SQL Server |
+| `pdo_odbc` (hoặc `pdo_sqlsrv`) | Chỉ cần cho các lệnh đồng bộ từ ERP SQL Server (xem “Kết nối ERP”) |
 | Node.js ≥ 20 | Chỉ để build giao diện đăng nhập (Vite) |
 
 > **Lưu ý XAMPP:** cần bản XAMPP có PHP ≥ 8.2 (bản 8.0.x không chạy được Laravel 12; Laravel 9 đã hết hỗ trợ bảo mật).
@@ -49,7 +49,7 @@ và một user MySQL riêng chỉ có quyền trên database đó (đừng dùng
 ## Nạp dữ liệu khách hàng
 
 ```bash
-# 1. Đồng bộ từ ERP (cần pdo_sqlsrv + điền ERP_DB_* trong .env, tài khoản chỉ có quyền SELECT)
+# 1. Đồng bộ từ ERP (cần pdo_odbc hoặc pdo_sqlsrv + điền ERP_DB_* trong .env, tài khoản chỉ có quyền SELECT)
 php artisan customers:sync-erp
 
 # 2. Hoặc dữ liệu mẫu để chạy thử (bị chặn trên production)
@@ -58,7 +58,16 @@ php artisan db:seed --class=DemoCustomerSeeder
 
 Đồng bộ là *upsert* theo mã `MA001`: thêm mới, cập nhật dữ liệu gốc, **không xóa** khách hàng và **không đụng** vào bản sửa tay. Có thể chạy lặp lại / đặt lịch.
 
-Cài `pdo_sqlsrv`: tải *Microsoft Drivers for PHP for SQL Server* đúng phiên bản PHP/TS-NTS, chép `php_pdo_sqlsrv_*.dll` vào `ext/`, thêm `extension=pdo_sqlsrv` vào `php.ini`, và cài *ODBC Driver 17/18 for SQL Server*.
+### Kết nối ERP (chỉ đọc)
+
+App tự chọn driver cho connection `erp` (`config/database.php`): có `pdo_sqlsrv` thì dùng nó, không thì dùng `pdo_odbc` + driver ODBC **“SQL Server”** có sẵn của Windows (không cần cài thêm gì). Ép bằng `ERP_DB_DRIVER=sqlsrv` hoặc `erp_odbc` trong `.env`.
+
+- **Cách `pdo_odbc` (mặc định trên máy chưa có pdo_sqlsrv):** bỏ dấu `;` ở dòng `;extension=pdo_odbc` trong `php.ini` của bản PHP chạy lệnh artisan (kiểm tra bằng `php -m | findstr /i odbc`). Dữ liệu ERP là `char` collation Chinese_PRC (GBK); kết nối đặt `AutoTranslate=no` và `GbkSqlServerConnection` đổi sang UTF-8 một lần, nên chữ Hán giữ nguyên còn chữ Việt mất dấu vẫn hiện `?` (xử lý bằng từ điển sửa dấu). Driver cũ này không mã hóa đường truyền, giống bản Python trước đây.
+- **Cách `pdo_sqlsrv`:** tải *Microsoft Drivers for PHP for SQL Server* đúng phiên bản PHP (NTS/ZTS), chép `php_pdo_sqlsrv_*.dll` vào `ext/`, thêm `extension=pdo_sqlsrv` vào `php.ini`, và cài *ODBC Driver 17/18 for SQL Server*.
+- Cả hai chỉ chạy lệnh `SELECT`; nên dùng tài khoản SQL Server chỉ có quyền đọc.
+- **Host Linux (aaPanel, VPS...):** driver ODBC "SQL Server" của Windows **không có** trên Linux, nên phải dùng cách `pdo_sqlsrv`: cài *Microsoft ODBC Driver 18 for SQL Server* (`msodbcsql18`) rồi extension `sqlsrv` + `pdo_sqlsrv` cho đúng bản PHP của site (aaPanel: App Store → PHP → Install extensions, hoặc `pecl install sqlsrv pdo_sqlsrv`), bật trong `php.ini` của **PHP CLI** (cron chạy bằng CLI). Server ERP có IP nội bộ (172.x) chỉ tới được từ cùng mạng/VPN: host công cộng phải có đường tới `ERP_DB_HOST:1433`.
+- **Chẩn đoán nhanh trên bất kỳ máy nào:** `php artisan erp:check` cho biết driver đang dùng, có kết nối được ERP không, số khách/phiếu/đơn trong ERP so với MySQL, có còn khách demo A001–A008 không, và lần đồng bộ gần nhất cách bao lâu (nghi cron chưa chạy nếu quá 15 phút).
+- **Lịch tự đồng bộ trên aaPanel:** Cron → tác vụ Shell mỗi phút: `cd /www/wwwroot/<thư mục site> && php artisan schedule:run >> /dev/null 2>&1` (dùng đúng bản PHP của site, ví dụ `/www/server/php/83/bin/php`).
 
 ## Phiếu giao hàng
 

@@ -273,36 +273,47 @@ mark.lost { padding: 0 1px; border-radius: 3px; background: var(--negative-bg); 
 
 /* ---------- Đơn đặt hàng: bản xác nhận để chụp gửi khách ---------- */
 .hint-line { margin-bottom: 12px; color: var(--muted); font-size: 13px; }
-.order-card { max-width: 960px; margin-bottom: 32px; padding: 28px 32px; border: 1px solid var(--edge); border-radius: var(--radius-panel);
-  background: #fff; }
-.order-card__head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; padding-bottom: 20px;
-  border-bottom: 2px solid var(--text); }
-.order-card__company { display: flex; gap: 14px; align-items: flex-start; }
-.order-card__company img { width: 48px; height: 48px; flex: none; }
-.order-card__company-name { font-size: 15px; font-weight: 700; line-height: 20px; }
-.order-card__company-zh { font-size: 13px; color: var(--muted); }
-.order-card__company-address { margin-top: 2px; font-size: 13px; color: var(--muted); }
-.order-card__title { text-align: right; }
-.order-card__doc { font-size: 20px; line-height: 28px; font-weight: 700; }
-.order-card__doc .zh { font-size: 15px; font-weight: 500; }
-.order-card__meta { display: grid; grid-template-columns: auto auto; justify-content: end; gap: 2px 12px; margin: 8px 0 0; font-size: 14px; }
-.order-card__meta dt { color: var(--muted); }
-.order-card__meta dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
-.order-card__customer { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; margin: 18px 0 24px; }
-.order-card__customer dt { color: var(--muted); font-size: 12px; }
-.order-card__customer dd { margin: 2px 0 0; font-weight: 600; }
-.order-card__table .col-seq { width: 44px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.order-card__item { font-weight: 500; }
-.order-card__item-zh { display: block; color: var(--text); font-size: 13px; }
+.order-card { max-width: 1040px; margin-bottom: 32px; padding: 24px 28px 28px; border: 1px solid var(--edge); border-radius: var(--radius-panel);
+  background: #fff; color: #000; }
+/* Đầu đơn như phiếu giao: logo trái, khối công ty + tiêu đề, số đơn / ngày đặt bên phải */
+.order-card__head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px 22px; align-items: start; margin-bottom: 16px; }
+.order-card__logo { width: 84px; height: auto; margin-top: 4px; }
+.order-card__company { font-weight: 700; font-size: 13px; line-height: 19px; }
+.order-card__company-zh { font-size: 13px; font-weight: 400; }
+.order-card__company p { margin: 0; }
+.order-card__company .order-card__doc { margin-top: 8px; font-size: 28px; line-height: 34px; text-decoration: underline; }
+.order-card__doc .zh { display: block; font-size: 26px; line-height: 32px; font-weight: 400; text-decoration: none; }
+.order-card__meta { display: grid; grid-template-columns: auto auto; gap: 4px 16px; align-self: end; margin: 0; font-size: 14px; }
+.order-card__meta dt { text-align: left; white-space: nowrap; }
+.order-card__meta dd { margin: 0; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.order-card .zh { font-weight: 400; }
+/* Khung khách hàng: viền đen như phiếu giao */
+.order-card__box { width: 100%; border-collapse: collapse; border: 1px solid #000; }
+.order-card__box th, .order-card__box td { padding: 6px 10px; text-align: left; vertical-align: middle; font-weight: 400; }
+.order-card__box th { width: 160px; white-space: nowrap; }
+.order-card__box .strong { font-weight: 700; }
+.order-card__box .order-card__box-po { width: 120px; border-left: 1px solid #000; }
+/* Bảng hàng: lưới đen, chữ căn giữa, tiêu đề 2 dòng Trung / Việt */
+.order-card .table-wrap { overflow-x: auto; }
+.order-card__table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.order-card__table th, .order-card__table td { padding: 6px 8px; border: 1px solid #000; text-align: center; vertical-align: middle; }
+.order-card__table thead th { white-space: nowrap; font-size: 13px; font-weight: 700; line-height: 18px; }
+.order-card__table thead .zh { display: block; font-weight: 400; font-size: 13px; }
+.order-card__table .col-seq { width: 52px; }
+.order-card__table td { line-height: 20px; }
+.order-card__item { display: block; font-weight: 500; }
+.order-card__item-zh { display: block; margin-top: 1px; font-size: 13px; }
+.order-card__table .sub { display: block; margin-top: 2px; font-size: 12px; color: #444; }
 .order-card .price { display: none; }
 .order-card.show-prices .price { display: table-cell; }
 .order-card.show-prices .order-card__totals.price { display: block; }
-.order-card__totals { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--edge); }
+.order-card__totals { margin-top: 12px; }
 .order-card__totals dl { display: grid; grid-template-columns: auto minmax(140px, auto); justify-content: end; gap: 4px 24px; margin: 0; }
-.order-card__totals dt { color: var(--muted); text-align: right; }
+.order-card__totals dt { text-align: right; }
 .order-card__totals dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
-.order-card__totals .order-card__grand { color: var(--text); font-size: 16px; font-weight: 700; }
-.order-card__totals .sub { text-align: right; }
+.order-card__totals .order-card__grand { font-size: 16px; font-weight: 700; }
+.order-card__totals .sub { margin-top: 6px; font-size: 12px; text-align: right; }
+@media (max-width: 720px) { .order-card { padding: 16px; } .order-card__head { grid-template-columns: auto minmax(0, 1fr); } .order-card__meta { grid-column: 1 / -1; } }
 .nowrap { white-space: nowrap; }
 .order-internal { max-width: 960px; }
 .section-title--spaced { margin-top: 28px; }
@@ -354,9 +365,9 @@ mark.lost { padding: 0 1px; border-radius: 3px; background: var(--negative-bg); 
 
 @media (max-width: 640px) {
   .order-card { padding: 18px 16px; }
-  .order-card__title { text-align: left; }
-  .order-card__meta { justify-content: start; }
-  .order-card__meta dd { text-align: left; }
+  .order-card__meta { justify-self: start; text-align: left; }
+  .order-card__doc { font-size: 28px; line-height: 36px; }
+  .order-card__doc .zh { font-size: 24px; line-height: 30px; }
   .order-card__customer { grid-template-columns: 1fr; }
   /* Mỗi dòng hàng thành một khối: tên hàng trên, số lượng / ngày giao / giá bên dưới kèm nhãn. */
   .order-card__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }

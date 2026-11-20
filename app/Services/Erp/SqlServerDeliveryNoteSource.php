@@ -6,16 +6,13 @@ use App\Contracts\ErpDeliveryNoteSource;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use RuntimeException;
 
 /** Đọc COPTG (đầu phiếu) + COPTH (dòng) của ERP qua connection 'erp'. Chỉ SELECT. */
 class SqlServerDeliveryNoteSource implements ErpDeliveryNoteSource
 {
     public function chunks(string $since, int $size): iterable
     {
-        if (! extension_loaded('pdo_sqlsrv')) {
-            throw new RuntimeException('Thiếu extension pdo_sqlsrv của PHP (xem README).');
-        }
+        OdbcSqlServerConnector::assertAvailable();
         if (! preg_match('/^\d{8}$/', $since)) {
             throw new InvalidArgumentException('Ngày --since phải có dạng YYYYMMDD.');
         }

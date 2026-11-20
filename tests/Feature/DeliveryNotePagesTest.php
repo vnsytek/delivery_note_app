@@ -168,7 +168,7 @@ class DeliveryNotePagesTest extends TestCase
             ->assertSeeInOrder(['销货单号', 'Số phiếu', 'V231- 261028005', '制表日期', 'Ngày lập', '2026-11-03'])
             ->assertSee('UDE 創源-')->assertSee('CÔNG TY UDE')
             ->assertSee('Ms. Hien - 0344536330')->assertSee('NL0088')
-            ->assertSeeInOrder(['STT', 'MÃ LIỆU SANG Y', 'Quy cách', 'SL', 'ĐVT', 'PO No.', 'Mã hàng UDE', 'Mã bộ phận'])
+            ->assertSeeInOrder(['STT', 'MÃ LIỆU SANG Y', 'TÊN HÀNG', 'QUY CÁCH', 'SL', 'ĐVT', 'PO No.', 'Mã hàng UDE', 'Mã bộ phận'])
             ->assertSee('33V2-261026009')->assertSee('VR-205140001')->assertSee('MVP30')
             ->assertSee('客户签收')->assertSee('倉庫')
             ->assertDontSee('填表');
@@ -256,6 +256,72 @@ class DeliveryNotePagesTest extends TestCase
 
         // Xóa tên Trung và tên Việt không đổi => mục danh mục bị xóa.
         $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['name' => 'Core i7-14700', 'name_zh' => '']]])->assertRedirect();
+        $this->assertDatabaseCount('product_names', 0);
+    }
+
+    public function test_erp_general_template_has_general_columns_and_both_sign_boxes(): void
+    {
+        $this->login();
+        $note = $this->note(['erp_no' => '261111001', 'issued_on' => '2026-11-11', 'receiver' => 'Ms. Lan', 'erp_address' => 'Hải Phòng'], 1, [
+            'customer_po' => 'SG2026111001', 'customer_item_code' => 'XH1874', 'dept_code' => 'MVP30', 'remark' => 'Giao gấp',
+            'erp_name' => 'Máy in phun màu Epson L1210', 'erp_spec' => 'L3110',
+        ]);
+
+        $this->get("/delivery-notes/{$note->id}/print?template=erp-general")->assertOk()
+            ->assertSee('class="sheet tpl-erp tpl-erp-general"', false)
+            ->assertSee('css/print-erp.css', false)
+            ->assertSeeInOrder(['Phiếu Giao Hàng', '出貨單', 'V231- 261111001'])
+            ->assertSeeInOrder(['客户名稱', '收货人:', 'Ms. Lan', '收货地址', 'Hải Phòng'])
+            ->assertSeeInOrder(['STT', 'MÃ LIỆU', 'TÊN HÀNG', 'QUY CÁCH', 'SL', 'ĐVT', 'Số đơn khách', 'Mã hàng khách', 'Ghi chú'])
+            ->assertSeeInOrder(['客戶品號', 'Mã hàng khách'])
+            ->assertSeeInOrder(['TÊN HÀNG', 'QUY CÁCH', 'Máy in phun màu Epson L1210', 'L3110'])
+            ->assertSee('SG2026111001')->assertSee('Giao gấp')
+            ->assertSeeInOrder(['客户签收', '倉庫', '填表'])
+            ->assertSeeInOrder(['SG2026111001', 'XH1874', 'Giao gấp']) // 客戶品號 (COPTD.TD014) nằm cạnh số đơn khách
+            // mã bộ phận chỉ có ở mẫu ERP riêng
+            ->assertDontSee('Mã bộ phận')->assertDontSee('MVP30');
+
+        $this->get("/delivery-notes/{$note->id}/print?template=erp")
+            ->assertSee('Mã bộ phận')->assertSee('XH1874')->assertDontSee('填表');
+    }
+
+    public function test_template_switcher_lists_general_and_specific_erp_templates(): void
+    {
+        $this->login();
+        $note = $this->note();
+
+        $this->get("/delivery-notes/{$note->id}")->assertSeeInOrder(['Mẫu Excel', 'Mẫu ERP chung', 'Mẫu ERP riêng']);
+        $this->get("/delivery-notes/{$note->id}/print")->assertSee('Mẫu ERP chung')->assertSee('Mẫu ERP riêng');
+    }
+
+    public function test_every_template_prints_name_and_spec_in_vietnamese_and_chinese(): void
+    {
+        $this->login();
+        $note = $this->note([], 1, ['item_code' => 'GIT46IN', 'erp_name' => 'Giấy in tem', 'erp_spec' => '1 cuộn/500 pcs']);
+
+        foreach (['excel', 'erp-general', 'erp'] as $template) {
+            $this->get("/delivery-notes/{$note->id}/print?template={$template}")
+                ->assertSeeInOrder(['Giấy in tem', '標籤紙／熱感紙'])   // tên Việt rồi tên Trung (loại hàng)
+                ->assertSeeInOrder(['1 cuộn', '1 卷/500 個'], false);    // quy cách Việt rồi quy cách Trung
+        }
+    }
+
+    public function test_update_saves_spec_in_both_languages_and_only_what_differs_from_automatic(): void
+    {
+        $this->login();
+        $note = $this->note([], 1, ['item_code' => 'GIT46IN', 'erp_name' => 'Giấy in tem', 'erp_spec' => '1 cuộn/500 pcs']);
+        $line = $note->lines()->first();
+
+        // Quy cách Việt giữ nguyên bản tự động (không lưu), quy cách Trung sửa tay.
+        $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => [
+            'name' => 'Giấy in tem', 'name_zh' => '標籤紙／熱感紙', 'spec' => '1 cuộn/500 pcs', 'spec_zh' => '每卷500張',
+        ]]])->assertRedirect();
+
+        $this->assertDatabaseHas('product_names', ['item_code' => 'GIT46IN', 'name' => null, 'name_zh' => null, 'spec' => null, 'spec_zh' => '每卷500張']);
+        $this->get("/delivery-notes/{$note->id}/print?template=erp-general")->assertSee('每卷500張')->assertDontSee('1 卷/500 個');
+
+        // Xóa bản sửa => quay về bản tự động và mục danh mục bị bỏ.
+        $this->put("/delivery-notes/{$note->id}", ['lines' => [$line->id => ['spec_zh' => '1 卷/500 個']]])->assertRedirect();
         $this->assertDatabaseCount('product_names', 0);
     }
 }

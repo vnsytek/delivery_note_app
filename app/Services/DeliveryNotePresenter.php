@@ -14,13 +14,13 @@ class DeliveryNotePresenter
         private readonly CustomerNameResolver $customers,
         private readonly VietnameseAccentRestorer $restorer,
         private readonly UnitCatalog $units,
-        private readonly ProductNameResolver $products,
+        private readonly ProductLineText $text,
     ) {}
 
     public function present(DeliveryNote $note): array
     {
         $note->loadMissing('customer', 'lines');
-        $catalog = $this->products->catalog($note->lines->pluck('item_code'));
+        $catalog = ProductName::whereIn('item_code', $note->lines->pluck('item_code'))->get()->keyBy('item_code');
 
         return [
             'id' => $note->id,
@@ -54,20 +54,24 @@ class DeliveryNotePresenter
 
     private function line(DeliveryNoteLine $line, ?ProductName $entry): array
     {
+        $text = $this->text->build($line->item_code, $line->erp_name, $line->erp_spec, $entry);
         $unit = $this->units->resolve($line->unit_raw);
-        $product = $this->products->present($line->erp_name, $line->erp_spec, $entry);
 
         return [
             'id' => $line->id,
             'seq' => $line->seq,
             'item_code' => $line->item_code,
-            'name' => $product['name'],
-            'name_status' => $product['name_status'],
-            'name_zh' => $product['name_zh'],
-            'name_zh_auto' => $product['name_zh_auto'],
-            'name_suggested' => $product['name_suggested'],
-            'erp_name' => $product['erp_name'],
-            'spec' => $product['spec'],
+            'name' => $text['name'],
+            'name_status' => $text['name_status'],
+            'name_zh' => $text['name_zh'],
+            'name_zh_auto' => $text['name_zh_auto'],
+            'name_suggested' => $text['name_suggested'],
+            'spec' => $text['spec'],
+            'spec_zh' => $text['spec_zh'],
+            'spec_suggested' => $text['spec_suggested'],
+            'spec_zh_auto' => $text['spec_zh_auto'],
+            'type' => $text['type'],
+            'erp_name' => trim((string) $line->erp_name),
             'quantity' => $this->qty($line->printedQuantity()),
             'quantity_erp' => $this->qty((float) $line->quantity),
             'quantity_edited' => $line->quantity_manual !== null,

@@ -102,6 +102,6 @@ class ProductPageTest extends TestCase
         ProductName::create(['item_code' => 'PRT1', 'spec' => 'LỖ3110']);
 
         $this->get("/orders/{$line->order_id}")->assertOk()
-            ->assertSee('Máy in')->assertSee('打印机')->assertSee('quy cách LỖ3110', false);
+            ->assertSee('Máy in')->assertSee('打印机')->assertSee('LỖ3110'); // quy cách nằm ở cột riêng (bố cục đơn mới)
     }
 }

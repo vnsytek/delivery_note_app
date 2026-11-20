@@ -10,7 +10,8 @@ use App\Services\ProductNameResolver;
  * Lưu tên hàng sửa tay theo mã hàng (dùng chung cho trang phiếu giao và trang "Tên hàng").
  *
  * Chỉ các trường có trong $input mới bị đổi (name, name_zh, spec). Giá trị trống hoặc trùng gợi ý tự động
- * được lưu là null (= dùng gợi ý, sau này từ điển sửa dấu tốt hơn thì tên cũng tốt theo). Cả ba đều null thì xóa mục.
+ * được lưu là null (= dùng gợi ý, sau này từ điển sửa dấu tốt hơn thì tên cũng tốt theo). Mọi trường (kể cả spec_zh
+ * sửa trên trang phiếu) đều null thì xóa mục.
  * Chỉ ghi vào MySQL của app; ERP không bị đổi.
  */
 class SaveProductName
@@ -37,7 +38,7 @@ class SaveProductName
             $entry->{$field} = ($value === null || $value === $auto[$autoKey]) ? null : $value;
         }
 
-        if ($entry->name === null && $entry->name_zh === null && $entry->spec === null) {
+        if ($entry->name === null && $entry->name_zh === null && $entry->spec === null && $entry->spec_zh === null) {
             if ($entry->exists) {
                 $entry->delete();
             }
