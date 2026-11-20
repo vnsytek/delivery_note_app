@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\DeliveryNote;
 use App\Models\DeliveryNoteLine;
 use App\Models\ProductName;
-use App\Support\ChineseText;
 use App\Support\VietnameseAccentRestorer;
 
 /** Dựng dữ liệu hiển thị/in của một phiếu: tên đúng dấu, ĐVT chuẩn. */
@@ -15,6 +14,7 @@ class DeliveryNotePresenter
         private readonly CustomerNameResolver $customers,
         private readonly VietnameseAccentRestorer $restorer,
         private readonly UnitCatalog $units,
+        private readonly ProductLineText $text,
     ) {}
 
     public function present(DeliveryNote $note): array
@@ -54,31 +54,24 @@ class DeliveryNotePresenter
 
     private function line(DeliveryNoteLine $line, ?ProductName $entry): array
     {
-        $original = trim((string) $line->erp_name);
-        // Chữ Hán lẫn trong tên ERP được tách ra làm dòng tiếng Trung; phần còn lại mới khôi phục dấu tiếng Việt.
-        ['latin' => $latin, 'zh' => $autoZh] = ChineseText::split($original);
-
-        if ($entry?->name !== null) {
-            $name = $entry->name;
-            $status = CustomerNameResolver::STATUS_MANUAL;
-        } else {
-            $name = $this->restorer->suggest($latin);
-            $status = $this->restorer->statusOf($latin, $name);
-        }
-        $nameZh = $entry?->name_zh ?? $autoZh;
+        $text = $this->text->build($line->item_code, $line->erp_name, $line->erp_spec, $entry);
         $unit = $this->units->resolve($line->unit_raw);
 
         return [
             'id' => $line->id,
             'seq' => $line->seq,
             'item_code' => $line->item_code,
-            'name' => $name,
-            'name_status' => $status,
-            'name_zh' => $nameZh,
-            'name_zh_auto' => $autoZh,
-            'name_suggested' => $this->restorer->suggest($latin),
-            'erp_name' => $original,
-            'spec' => $this->restorer->suggest($line->erp_spec),
+            'name' => $text['name'],
+            'name_status' => $text['name_status'],
+            'name_zh' => $text['name_zh'],
+            'name_zh_auto' => $text['name_zh_auto'],
+            'name_suggested' => $text['name_suggested'],
+            'spec' => $text['spec'],
+            'spec_zh' => $text['spec_zh'],
+            'spec_suggested' => $text['spec_suggested'],
+            'spec_zh_auto' => $text['spec_zh_auto'],
+            'type' => $text['type'],
+            'erp_name' => trim((string) $line->erp_name),
             'quantity' => rtrim(rtrim(number_format((float) $line->quantity, 3, '.', ''), '0'), '.'),
             'unit' => $unit['name'],
             'unit_known' => $unit['known'],

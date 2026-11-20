@@ -1,22 +1,7 @@
 @props(['note', 'lines', 'company', 'page', 'pages'])
-{{-- Mẫu ERP: dựng theo ảnh phiếu in (khách UDE). Kích thước xem public/css/print-erp.css --}}
+{{-- Mẫu ERP riêng: đầu phiếu + các cột riêng của khách (PO / Mã hàng khách / Mã bộ phận) như ảnh phiếu UDE; Tên hàng và Quy cách tách riêng như mẫu chung. Kiểu: public/css/print-erp.css --}}
 <section class="sheet tpl-erp">
-    <img class="logo" src="{{ asset('images/logo.png') }}" alt="">
-
-    <div class="company">
-        <div class="company__zh zh">{{ $company['name_zh'] }}</div>
-        <div class="company__vi">{{ $company['name_vi'] }}</div>
-        <div class="company__address">{{ $company['address'] }}</div>
-        <div class="company__title">
-            <span class="company__title-vi">Phiếu Giao Hàng</span>
-            <span class="company__title-zh zh">出貨單</span>
-        </div>
-    </div>
-
-    <div class="meta">
-        <div class="meta__label"><span class="zh">销货单号</span> Số phiếu</div><div class="meta__value">{{ $note['erp_type'] }}- {{ $note['erp_no'] }}</div>
-        <div class="meta__label"><span class="zh">制表日期</span> Ngày lập</div><div class="meta__value">{{ $note['date_iso'] }}</div>
-    </div>
+    <x-delivery-notes.erp-header :note="$note" :company="$company" />
 
     <div class="body">
         <table class="box">
@@ -31,14 +16,15 @@
 
         <table class="items">
             <colgroup>
-                <col style="width:16.8mm"><col style="width:28.4mm"><col style="width:63.2mm"><col style="width:10.3mm">
-                <col style="width:9.3mm"><col style="width:24.3mm"><col style="width:24.8mm"><col style="width:17mm">
+                <col style="width:14mm"><col style="width:28mm"><col style="width:39mm"><col style="width:27mm"><col style="width:10mm">
+                <col style="width:10mm"><col style="width:24mm"><col style="width:24mm"><col style="width:18mm">
             </colgroup>
             <thead>
             <tr>
                 <th><span class="zh">序號</span><br>STT</th>
                 <th><span class="zh">品號</span><br>MÃ LIỆU SANG Y</th>
-                <th><span class="zh">规格</span><br>Quy cách</th>
+                <th><span class="zh">品名</span><br>TÊN HÀNG</th>
+                <th><span class="zh">规格</span><br>QUY CÁCH</th>
                 <th><span class="zh">数量</span><br>SL</th>
                 <th><span class="zh">單位</span><br>ĐVT</th>
                 <th><span class="zh">采购单号</span><br>PO No.</th>
@@ -51,10 +37,13 @@
                 <tr>
                     <td class="center">{{ $line['seq'] }}</td>
                     <td class="center">{{ $line['item_code'] }}</td>
-                    <td class="left">
+                    <td class="center">
                         <x-delivery-notes.breakable :text="$line['name']" />
-                        @if ($line['spec'])<br><x-delivery-notes.breakable :text="$line['spec']" />@endif
                         @if ($line['name_zh'])<br><span class="zh">{{ $line['name_zh'] }}</span>@endif
+                    </td>
+                    <td class="center">
+                        <x-delivery-notes.breakable :text="$line['spec']" />
+                        @if ($line['spec_zh'])<br><span class="zh">{{ $line['spec_zh'] }}</span>@endif
                     </td>
                     <td class="center">{{ $line['quantity'] }}</td>
                     <td class="center">{{ $line['unit'] }}</td>
@@ -68,7 +57,7 @@
             <tfoot>
                 <tr class="sign-top">
                     <td rowspan="2" class="sign-customer zh">客户签收</td>
-                    <td colspan="5" rowspan="2" class="sign-blank"></td>
+                    <td colspan="6" rowspan="2" class="sign-blank"></td>
                     <td colspan="2" class="sign-label zh">倉庫</td>
                 </tr>
                 <tr class="sign-bottom">

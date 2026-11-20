@@ -9,6 +9,7 @@ use App\Models\DeliveryNote;
 use App\Models\Order;
 use App\Services\CustomerNameResolver;
 use App\Services\DeliveryNotePresenter;
+use App\Services\PrintPaginator;
 use App\Support\DayLabel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -65,7 +66,7 @@ class DeliveryNoteController extends Controller
         ]);
     }
 
-    public function show(Request $request, DeliveryNote $deliveryNote, DeliveryNotePresenter $presenter): View
+    public function show(Request $request, DeliveryNote $deliveryNote, DeliveryNotePresenter $presenter, PrintPaginator $paginator): View
     {
         $note = $presenter->present($deliveryNote);
         $template = $this->templateFor($note['customer_code'], $request->query('template'));
@@ -86,6 +87,7 @@ class DeliveryNoteController extends Controller
             'orders' => $orders,
             'template' => $template,
             'templates' => config('delivery_note.template_labels'),
+            'pageCount' => count($paginator->paginate($note['lines'], $template)),
             'partialNames' => collect($note['lines'])->where('name_status', 'partial')->count(),
         ]);
     }
@@ -97,11 +99,11 @@ class DeliveryNoteController extends Controller
         return redirect()->route('delivery-notes.show', $deliveryNote)->with('status', 'Đã lưu phiếu.');
     }
 
-    public function print(Request $request, DeliveryNote $deliveryNote, DeliveryNotePresenter $presenter): View
+    public function print(Request $request, DeliveryNote $deliveryNote, DeliveryNotePresenter $presenter, PrintPaginator $paginator): View
     {
         $note = $presenter->present($deliveryNote);
         $template = $this->templateFor($note['customer_code'], $request->query('template'));
-        $pages = array_chunk($note['lines'], config("delivery_note.templates.{$template}.lines_per_page")) ?: [[]];
+        $pages = $paginator->paginate($note['lines'], $template);
 
         return view('delivery-notes.print', [
             'note' => $note,

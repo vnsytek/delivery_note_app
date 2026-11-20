@@ -1,6 +1,6 @@
 /*
  * Mẫu Excel ("phieu giao hang hdv.xlsx"). Kích thước đo từ chính file: xuất sheet ra PDF bằng Excel,
- * chiều rộng 8 cột A..H = 198 mm (vừa khổ rộng A5 ngang trừ lề 6 mm), 1 pt gốc của Excel = 0,307 mm,
+ * chiều rộng 8 cột A..H = 198 mm (nay 9 cột vì thêm 客戶品號, vẫn tổng 198 mm) (vừa khổ rộng A5 ngang trừ lề 6 mm), 1 pt gốc của Excel = 0,307 mm,
  * chữ 12 pt gốc = 10,44 pt khi in.
  */
 .tpl-excel { --line: 0.3mm; }
@@ -60,3 +60,6 @@
 .tpl-excel .foot-blank { border-top: var(--line) solid #000; border-bottom: var(--line) solid #000; }
 .tpl-excel .foot-label { border: var(--line) solid #000; text-align: center; vertical-align: top; }
 .tpl-excel .foot-box { border: var(--line) solid #000; }
+
+/* Chân phiếu: 客户签收 / 倉庫 / 填表 căn giữa ô (cần chọn lọc cụ thể hơn `.xl td` ở trên) */
+.tpl-excel .xl .foot-customer, .tpl-excel .xl .foot-label { text-align: center; vertical-align: middle; }

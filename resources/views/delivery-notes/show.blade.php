@@ -103,7 +103,7 @@
                 <div class="preview" data-preview>
                     <iframe src="{{ $previewUrl($template) }}" title="Bản xem trước phiếu {{ $note['number'] }}" tabindex="-1" loading="lazy"></iframe>
                 </div>
-                <p class="panel__note" data-preview-note aria-live="polite">Bản in theo dữ liệu đã lưu{{ count($note['lines']) > config("delivery_note.templates.{$template}.lines_per_page") ? ', đây là tờ đầu tiên' : '' }}.</p>
+                <p class="panel__note" data-preview-note aria-live="polite">Bản in theo dữ liệu đã lưu{{ $pageCount > 1 ? ', đây là tờ đầu tiên' : '' }}.</p>
             </section>
         </div>
 
@@ -136,10 +136,18 @@
                                 <input type="text" id="line-name-zh-{{ $line['id'] }}" name="lines[{{ $line['id'] }}][name_zh]" maxlength="255"
                                        class="input input--cell input--zh" placeholder="Tên tiếng Trung (in dưới tên Việt)"
                                        value="{{ old('lines.'.$line['id'].'.name_zh', $line['name_zh']) }}" autocomplete="off">
+                                <label class="visually-hidden" for="line-spec-{{ $line['id'] }}">Quy cách tiếng Việt dòng {{ $line['seq'] }}</label>
+                                <input type="text" id="line-spec-{{ $line['id'] }}" name="lines[{{ $line['id'] }}][spec]" maxlength="255"
+                                       class="input input--cell" placeholder="Quy cách (tiếng Việt)"
+                                       value="{{ old('lines.'.$line['id'].'.spec', $line['spec']) }}" autocomplete="off">
+                                <label class="visually-hidden" for="line-spec-zh-{{ $line['id'] }}">Quy cách tiếng Trung dòng {{ $line['seq'] }}</label>
+                                <input type="text" id="line-spec-zh-{{ $line['id'] }}" name="lines[{{ $line['id'] }}][spec_zh]" maxlength="255"
+                                       class="input input--cell input--zh" placeholder="規格 (quy cách tiếng Trung; để trống nếu chỉ là mã)"
+                                       value="{{ old('lines.'.$line['id'].'.spec_zh', $line['spec_zh']) }}" autocomplete="off">
                                 @if ($line['erp_name'] !== '' && $line['erp_name'] !== $line['name'])
                                     <span class="original">Gốc trong ERP: <x-lost-marks :text="$line['erp_name']" /></span>
                                 @endif
-                                <span class="sub">Mã {{ $line['item_code'] }}@if ($line['spec']), quy cách {{ $line['spec'] }}@endif</span>
+                                <span class="sub">Mã {{ $line['item_code'] }}@if ($line['type']) · {{ $line['type']['vi'] }} {{ $line['type']['zh'] }}@endif</span>
                             </td>
                             <td class="col-qty num" data-label="Số lượng">
                                 {{ $line['quantity'] }} {{ $line['unit'] }}

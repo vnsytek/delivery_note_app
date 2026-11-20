@@ -114,9 +114,10 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
-        // Nguồn ERP (SQL Server) - chỉ dùng để đọc dữ liệu khách hàng.
+        // Nguồn ERP: dùng pdo_sqlsrv nếu máy có, không thì pdo_odbc (driver ODBC "SQL Server" có sẵn). Ép bằng ERP_DB_DRIVER=sqlsrv|erp_odbc.
         'erp' => [
-            'driver' => 'sqlsrv',
+            'driver' => env('ERP_DB_DRIVER', extension_loaded('pdo_sqlsrv') ? 'sqlsrv' : 'erp_odbc'),
+            'odbc_driver' => env('ERP_ODBC_DRIVER', 'SQL Server'),
             'host' => env('ERP_DB_HOST'),
             'port' => env('ERP_DB_PORT', '1433'),
             'database' => env('ERP_DB_DATABASE'),

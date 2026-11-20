@@ -3,10 +3,11 @@
 namespace App\Actions;
 
 use App\Models\DeliveryNote;
+use App\Models\DeliveryNoteLine;
 use App\Models\ProductName;
 use App\Services\AccentDictionary;
+use App\Services\ProductLineText;
 use App\Support\ChineseText;
-use App\Support\VietnameseAccentRestorer;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 class UpdateDeliveryNote
 {
     public function __construct(
-        private readonly VietnameseAccentRestorer $restorer,
+        private readonly ProductLineText $text,
         private readonly AccentDictionary $dictionary,
     ) {}
 
@@ -44,32 +45,50 @@ class UpdateDeliveryNote
                     'dept_code' => $this->clean($input['dept_code'] ?? null),
                     'remark' => $this->clean($input['remark'] ?? null),
                 ]);
-                $this->saveProductName($line->item_code, $line->erp_name, $this->clean($input['name'] ?? null), $this->clean($input['name_zh'] ?? null));
+                $this->saveProductText($line, [
+                    'name' => $this->clean($input['name'] ?? null),
+                    'name_zh' => $this->clean($input['name_zh'] ?? null),
+                    'spec' => $this->clean($input['spec'] ?? null),
+                    'spec_zh' => $this->clean($input['spec_zh'] ?? null),
+                ]);
             }
         });
     }
 
     /**
-     * Tên Việt / tên Trung giống gợi ý tự động thì không lưu; cả hai đều giống (hoặc để trống) thì xóa mục danh mục.
+     * Lưu tên hàng / quy cách (Việt, Trung) theo mã hàng. Giá trị trùng bản tự động thì không lưu (= tiếp tục dùng bản tự động);
+     * cả bốn đều trùng hoặc để trống thì xóa mục danh mục của mã hàng.
+     *
+     * @param  array{name: ?string, name_zh: ?string, spec: ?string, spec_zh: ?string}  $input
      */
-    private function saveProductName(string $itemCode, ?string $erpName, ?string $name, ?string $nameZh): void
+    private function saveProductText(DeliveryNoteLine $line, array $input): void
     {
-        ['latin' => $latin, 'zh' => $autoZh] = ChineseText::split($erpName);
-        $suggestion = $this->restorer->suggest($latin);
+        $auto = $this->text->build($line->item_code, $line->erp_name, $line->erp_spec);
 
-        // Chỉ lưu phần khác gợi ý tự động; phần nào trùng gợi ý thì để trống (= dùng gợi ý).
-        $manualName = ($name !== null && $name !== $suggestion) ? $name : null;
-        $manualZh = ($nameZh !== null && $nameZh !== $autoZh) ? $nameZh : null;
+        $manual = [
+            'name' => $this->differs($input['name'], $auto['name_suggested']),
+            'name_zh' => $this->differs($input['name_zh'], $auto['name_zh_auto']),
+            'spec' => $this->differs($input['spec'], $auto['spec_suggested']),
+            'spec_zh' => $this->differs($input['spec_zh'], $auto['spec_zh_auto']),
+        ];
 
-        if ($manualName === null && $manualZh === null) {
-            ProductName::where('item_code', $itemCode)->delete();
+        if (array_filter($manual, fn ($value) => $value !== null) === []) {
+            ProductName::where('item_code', $line->item_code)->delete();
 
             return;
         }
-        ProductName::updateOrCreate(['item_code' => $itemCode], ['name' => $manualName, 'name_zh' => $manualZh]);
-        if ($manualName !== null) {
-            $this->dictionary->learn($latin, $manualName); // từ điển sửa dấu học theo cho các mặt hàng khác
+        ProductName::updateOrCreate(['item_code' => $line->item_code], $manual);
+
+        if ($manual['name'] !== null) {
+            // Từ điển sửa dấu học theo cho các mặt hàng khác; chỉ phần Latin (đã tách chữ Hán) mới so được từng từ.
+            $this->dictionary->learn(ChineseText::split($line->erp_name)['latin'], $manual['name']);
         }
+    }
+
+    /** Giá trị người nhập nếu khác bản tự động, ngược lại null. */
+    private function differs(?string $submitted, ?string $auto): ?string
+    {
+        return ($submitted !== null && $submitted !== (string) $auto) ? $submitted : null;
     }
 
     private function clean(?string $value): ?string

@@ -8,6 +8,7 @@ use App\Models\DeliveryNote;
 use App\Models\DeliveryNoteLine;
 use App\Models\Order;
 use App\Models\OrderLine;
+use App\Models\ProductName;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
@@ -125,7 +126,8 @@ class OrderTest extends TestCase
         DeliveryNote::factory()->create(['erp_type' => 'V231', 'erp_no' => '261107011']); // phiếu của đơn khác
 
         $page = $this->get("/orders/{$order->id}")->assertOk()
-            ->assertSee('Xác nhận đơn đặt hàng')
+            ->assertSee('Đơn đặt hàng')
+            ->assertDontSee('Xác nhận đơn đặt hàng')
             ->assertSee('Core i7')
             ->assertSee('72.600.000')          // tổng có trong trang, chỉ ẩn bằng CSS
             ->assertSee('đã gồm thuế GTGT')
@@ -138,5 +140,27 @@ class OrderTest extends TestCase
 
         // Từ phiếu giao mở ngược lại đơn gốc.
         $this->get("/delivery-notes/{$note->id}")->assertSee('Lập từ đơn')->assertSee(route('orders.show', $order->id));
+    }
+
+    public function test_order_lines_show_chinese_name_and_equipment_type(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $order = Order::factory()->create();
+        // Laptop: mã NB* cho biết loại dù tên chỉ có cấu hình; chưa có tên Trung riêng => dòng Trung là tên loại.
+        OrderLine::factory()->create(['order_id' => $order->id, 'seq' => '0001', 'item_code' => 'NBB1403CVA-S66696W',
+            'erp_name' => 'INTEL Core 5-210H/16GB DDR5/ 1TB (512GBx2) SSD/Win11', 'erp_spec' => 'B1403CVA']);
+        // Màn hình có tên Trung riêng trong danh mục => hiện tên đó, và loại ghi cả hai thứ tiếng ở dòng mã.
+        OrderLine::factory()->create(['order_id' => $order->id, 'seq' => '0002', 'item_code' => 'MRVP227HF', 'erp_name' => 'ASUS VP227HF 21.5"']);
+        ProductName::create(['item_code' => 'MRVP227HF', 'name_zh' => '華碩 21.5吋液晶顯示器']);
+        // Chữ Hán lẫn trong tên ERP tự tách ra; mã lạ không có loại.
+        OrderLine::factory()->create(['order_id' => $order->id, 'seq' => '0003', 'item_code' => 'ZZZ999', 'erp_name' => 'Hàng lạ 特殊貨品']);
+
+        $page = $this->get("/orders/{$order->id}")->assertOk();
+
+        $page->assertSeeInOrder(['INTEL Core 5-210H', '筆記型電腦', 'Loại', 'Máy tính xách tay (laptop)'])
+            ->assertSee('NBB1403CVA-S66696W')
+            ->assertSeeInOrder(['ASUS VP227HF', '華碩 21.5吋液晶顯示器', 'Loại', 'Màn hình', '顯示器'])
+            ->assertSeeInOrder(['Hàng lạ', '特殊貨品'])
+            ->assertDontSee('Hàng lạ 特殊貨品');
     }
 }

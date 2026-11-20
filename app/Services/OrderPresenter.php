@@ -14,14 +14,15 @@ class OrderPresenter
         private readonly CustomerNameResolver $customers,
         private readonly VietnameseAccentRestorer $restorer,
         private readonly UnitCatalog $units,
+        private readonly ProductLineText $text,
     ) {}
 
     public function present(Order $order): array
     {
         $order->loadMissing('customer', 'lines');
-        $catalog = ProductName::whereIn('item_code', $order->lines->pluck('item_code'))->pluck('name', 'item_code');
+        $catalog = ProductName::whereIn('item_code', $order->lines->pluck('item_code'))->get()->keyBy('item_code');
         $names = $order->customer ? $this->customers->present($order->customer) : null;
-        $lines = $order->lines->map(fn (OrderLine $l) => $this->line($l, $catalog[$l->item_code] ?? null))->all();
+        $lines = $order->lines->map(fn (OrderLine $l) => $this->line($l, $catalog->get($l->item_code)))->all();
 
         return [
             'id' => $order->id,
@@ -56,17 +57,21 @@ class OrderPresenter
         };
     }
 
-    private function line(OrderLine $line, ?string $catalogName): array
+    private function line(OrderLine $line, ?ProductName $entry): array
     {
-        $original = trim((string) $line->erp_name);
+        $text = $this->text->build($line->item_code, $line->erp_name, $line->erp_spec, $entry);
         $unit = $this->units->resolve($line->unit_raw);
 
         return [
             'seq' => $line->seq,
             'item_code' => $line->item_code,
             'customer_item_code' => $line->customer_item_code,
-            'name' => $catalogName ?? $this->restorer->suggest($original),
-            'spec' => $this->restorer->suggest($line->erp_spec),
+            'name' => $text['name'],
+            'name_zh' => $text['name_zh'],
+            'name_zh_is_type' => $text['name_zh_source'] === 'type',
+            'type' => $text['type'],
+            'spec' => $text['spec'],
+            'spec_zh' => $text['spec_zh'],
             'quantity' => $this->qty($line->quantity),
             'delivered' => $this->qty($line->delivered_quantity),
             'remaining' => $this->qty(max(0, $line->quantity - $line->delivered_quantity)),

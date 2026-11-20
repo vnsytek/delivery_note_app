@@ -34,67 +34,74 @@
 
     <p class="hint-line">Khung bên dưới là bản xác nhận đơn để chụp màn hình gửi khách. Giá đang <strong data-price-state>{{ $showPrices ? 'hiện' : 'ẩn' }}</strong>.</p>
 
-    {{-- Bản xác nhận đơn: chỉ chứa thông tin dành cho khách (không có tình trạng nội bộ). --}}
-    <article @class(['order-card', 'show-prices' => $showPrices]) id="order-card" aria-label="Bản xác nhận đơn {{ $order['number'] }}">
+    {{-- Bản đơn để chụp màn hình gửi khách (dáng giống phiếu giao hàng): chỉ chứa thông tin dành cho khách, không có tình trạng nội bộ. --}}
+    <article @class(['order-card', 'show-prices' => $showPrices]) id="order-card" aria-label="Đơn đặt hàng {{ $order['number'] }}">
         <header class="order-card__head">
-            <div class="order-card__company">
-                <img src="{{ asset('images/poster-logo.png') }}" alt="" width="48" height="48">
-                <div>
-                    <p class="order-card__company-name" translate="no">{{ $company['name_vi'] }}</p>
-                    <p class="order-card__company-zh" translate="no">{{ $company['name_zh'] }}</p>
-                    <p class="order-card__company-address">{{ $company['address'] }}</p>
-                </div>
+            <img class="order-card__logo" src="{{ asset('images/logo.png') }}" alt="" width="84" height="66">
+            <div class="order-card__company" translate="no">
+                <p class="order-card__company-zh zh">{{ $company['name_zh'] }}</p>
+                <p class="order-card__company-name">{{ $company['name_vi'] }}</p>
+                <p class="order-card__company-address">{{ $company['address'] }}</p>
+                <p class="order-card__doc">Đơn đặt hàng <span class="zh">訂單</span></p>
             </div>
-            <div class="order-card__title">
-                <p class="order-card__doc">Xác nhận đơn đặt hàng <span class="zh">訂單</span></p>
-                <dl class="order-card__meta">
-                    <dt>Số đơn</dt><dd translate="no">{{ $order['number'] }}</dd>
-                    <dt>Ngày đặt</dt><dd>{{ $order['date'] }}</dd>
-                </dl>
-            </div>
+            <dl class="order-card__meta">
+                <dt><span class="zh">訂單單號</span> Số đơn</dt><dd translate="no">{{ $order['number'] }}</dd>
+                <dt><span class="zh">訂單日期</span> Ngày đặt</dt><dd>{{ $order['date'] }}</dd>
+            </dl>
         </header>
 
-        <dl class="order-card__customer">
-            <div>
-                <dt>Khách hàng</dt>
-                <dd><span translate="no">{{ $order['customer_code'] }}</span> – {{ $order['customer_full'] ?: $order['customer_short'] }}</dd>
-            </div>
-            <div>
-                <dt>Số PO của khách</dt>
-                <dd translate="no">{{ $order['customer_po'] ?: '—' }}</dd>
-            </div>
-        </dl>
+        <table class="order-card__box">
+            <tr>
+                <th scope="row"><span class="zh">客戶名稱</span> Khách hàng</th>
+                <td class="strong"><span translate="no">{{ $order['customer_code'] }}</span> – {{ $order['customer_full'] ?: $order['customer_short'] }}</td>
+                <th scope="row" class="order-card__box-po"><span class="zh">客戶單號</span> Số PO</th>
+                <td class="strong" translate="no">{{ $order['customer_po'] ?: '—' }}</td>
+            </tr>
+        </table>
 
         <div class="table-wrap">
-            <table class="table order-card__table">
+            <table class="order-card__table">
                 <thead>
                 <tr>
-                    <th scope="col" class="col-seq">STT</th>
-                    <th scope="col">Hàng hoá</th>
-                    <th scope="col" class="num">Số lượng</th>
-                    <th scope="col">Ngày giao</th>
-                    <th scope="col" class="num price">Đơn giá</th>
-                    <th scope="col" class="num price">Thành tiền</th>
+                    <th scope="col" class="col-seq"><span class="zh">序號</span>STT</th>
+                    <th scope="col"><span class="zh">品號</span>MÃ LIỆU</th>
+                    <th scope="col" class="col-name"><span class="zh">品名</span>TÊN HÀNG</th>
+                    <th scope="col"><span class="zh">規格</span>QUY CÁCH</th>
+                    <th scope="col"><span class="zh">數量</span>SL</th>
+                    <th scope="col"><span class="zh">單位</span>ĐVT</th>
+                    <th scope="col"><span class="zh">客戶品號</span>Mã hàng khách</th>
+                    <th scope="col"><span class="zh">交貨日期</span>Ngày giao</th>
+                    <th scope="col" class="price"><span class="zh">單價</span>Đơn giá</th>
+                    <th scope="col" class="price"><span class="zh">金額</span>Thành tiền</th>
                 </tr>
                 </thead>
                 <tbody>
                 @forelse ($order['lines'] as $line)
                     <tr>
                         <td class="col-seq">{{ (int) $line['seq'] }}</td>
+                        <td translate="no">{{ $line['item_code'] }}</td>
                         <td>
                             <span class="order-card__item">{{ $line['name'] }}</span>
-                            <span class="sub">
-                                Mã <span translate="no">{{ $line['item_code'] }}</span>@if ($line['spec']), quy cách {{ $line['spec'] }}@endif
-                                @if ($line['customer_item_code']), mã của quý khách <span translate="no">{{ $line['customer_item_code'] }}</span>@endif
-                            </span>
+                            @if ($line['name_zh'])
+                                <span class="order-card__item-zh zh">{{ $line['name_zh'] }}</span>
+                            @endif
+                            @if ($line['type'])
+                                <span class="sub">Loại <span class="zh">類別</span> {{ $line['type']['vi'] }}@unless ($line['name_zh_is_type']) <span class="zh">{{ $line['type']['zh'] }}</span>@endunless</span>
+                            @endif
                         </td>
-                        <td class="num nowrap">{{ $line['quantity'] }} {{ $line['unit'] }}</td>
+                        <td>
+                            @if ($line['spec']){{ $line['spec'] }}@endif
+                            @if ($line['spec_zh'])<span class="order-card__item-zh zh">{{ $line['spec_zh'] }}</span>@endif
+                        </td>
+                        <td class="nowrap">{{ $line['quantity'] }}</td>
+                        <td class="nowrap">{{ $line['unit'] }}</td>
+                        <td translate="no">{{ $line['customer_item_code'] }}</td>
                         <td class="nowrap">{{ $line['due'] ?? '—' }}</td>
-                        <td class="num nowrap price">{{ $money($line['unit_price']) }}</td>
-                        <td class="num nowrap price">{{ $money($line['amount']) }}</td>
+                        <td class="nowrap price">{{ $money($line['unit_price']) }}</td>
+                        <td class="nowrap price">{{ $money($line['amount']) }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="empty-state">Đơn không còn dòng hàng nào.</td></tr>
+                    <tr><td colspan="10" class="empty-state">Đơn không còn dòng hàng nào.</td></tr>
                 @endforelse
                 </tbody>
             </table>
@@ -102,12 +109,12 @@
 
         <div class="order-card__totals price">
             <dl>
-                <dt>Tiền hàng</dt><dd>{{ $money($order['amount']) }} đ</dd>
-                <dt>Thuế GTGT {{ $order['tax_rate'] }}%</dt><dd>{{ $money($order['tax']) }} đ</dd>
-                <dt class="order-card__grand">Tổng cộng</dt><dd class="order-card__grand">{{ $money($order['total']) }} đ</dd>
+                <dt>Tiền hàng <span class="zh">貨款</span></dt><dd>{{ $money($order['amount']) }} đ</dd>
+                <dt>Thuế GTGT {{ $order['tax_rate'] }}% <span class="zh">營業稅</span></dt><dd>{{ $money($order['tax']) }} đ</dd>
+                <dt class="order-card__grand">Tổng cộng <span class="zh">合計</span></dt><dd class="order-card__grand">{{ $money($order['total']) }} đ</dd>
             </dl>
             @if ($order['tax_included'])
-                <p class="sub">Đơn giá và thành tiền từng dòng đã gồm thuế GTGT.</p>
+                <p class="sub">Đơn giá và thành tiền từng dòng đã gồm thuế GTGT. <span class="zh">每行單價及金額均已含營業稅。</span></p>
             @endif
         </div>
     </article>
